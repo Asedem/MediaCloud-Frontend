@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import GradientButton from '@/components/GradientButton.vue'
-import SearchBar from '@/components/SearchBar.vue'
+import IconInput from '@/components/IconInput.vue'
 import UploadModal from '@/components/UploadModal.vue'
 
 interface ImageMetadata { id: number; title: string; }
@@ -23,7 +23,7 @@ onMounted(fetchImages);
 <template>
   <main>
     <div class="header">
-      <SearchBar class="search"></SearchBar>
+      <IconInput class="search"></IconInput>
       <div class="vertical-line"></div>
       <GradientButton class="new" @click="isModalOpen = true">
         <template #text>Upload Media</template>
@@ -72,7 +72,6 @@ onMounted(fetchImages);
   margin: 0 16px;
 }
 
-/* Temporary for displaying images */
 .gallery {
   padding: 2rem;
   display: grid;

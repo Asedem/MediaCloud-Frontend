@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import ContrastButton from '@/components/ContrastButton.vue'
 import GradientButton from '@/components/GradientButton.vue'
+import IconInput from '@/components/IconInput.vue'
 import BookmarkIcon from '@/components/icons/BookmarkIcon.vue'
 import BookmarksIcon from '@/components/icons/BookmarksIcon.vue'
 import ComponentIcon from '@/components/icons/ComponentIcon.vue'
 import ComponentIconFilled from '@/components/icons/ComponentIconFilled.vue'
 import ImageIcon from '@/components/icons/ImageIcon.vue'
 import ImageIconFilled from '@/components/icons/ImageIconFilled.vue'
+import SearchIcon from '@/components/icons/SearchIcon.vue'
 import IconToggle from '@/components/IconToggle.vue'
-import SearchBar from '@/components/SearchBar.vue'
 import SidebarButton from '@/components/SidebarButton.vue'
+import SimpleInput from '@/components/SimpleInput.vue'
 import SubtleButton from '@/components/SubtleButton.vue'
 import TagDisplay from '@/components/TagDisplay.vue'
 import TextToggle from '@/components/TextToggle.vue'
@@ -60,9 +62,15 @@ import ToggleDropdown from '@/components/ToggleDropdown.vue'
       <template #text>MANUAL</template>
     </TagDisplay>
 
-    <h2>Search Bar</h2>
-    <p>The Search bar on top of every side, that displays media</p>
-    <SearchBar></SearchBar>
+    <h2>Simple Input</h2>
+    <p>Simple text input component</p>
+    <SimpleInput placeholder="Enter name"></SimpleInput>
+
+    <h2>Icon Input</h2>
+    <p>Text input component with an icon up front</p>
+    <IconInput placeholder="Serach for anything...">
+      <template #icon><SearchIcon></SearchIcon></template>
+    </IconInput>
 
     <h2>Toggle Dropdown</h2>
     <p>A dropdown menu to expose multiple toggle buttons</p>

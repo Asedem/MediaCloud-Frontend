@@ -1,14 +1,13 @@
 <script setup lang="ts">
 import SearchIcon from './icons/SearchIcon.vue'
+
+defineProps(['placeholder'])
 </script>
 
 <template>
   <div id="bar">
     <div id="side">
-      <div id="icon">
-        <SearchIcon></SearchIcon>
-      </div>
-      <input type="text" placeholder="Search for anything..." />
+      <input type="text" :placeholder="placeholder" />
     </div>
   </div>
 </template>
