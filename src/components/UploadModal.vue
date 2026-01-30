@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import SubtleButton from './SubtleButton.vue';
+import GradientButton from './GradientButton.vue';
 
 const props = defineProps<{ isOpen: boolean }>();
 const emit = defineEmits(['close', 'uploaded']);
@@ -44,16 +46,23 @@ const uploadImage = async () => {
 <template>
   <div v-if="isOpen" class="modal-overlay" @click.self="emit('close')">
     <div class="modal-content">
-      <h3>Upload New Image</h3>
+      <h2>Upload from local disk</h2>
+      <p>Upload media directly from your mashine</p>
+        
       <div class="form-group">
+        <br>
         <input v-model="title" type="text" placeholder="Enter image title" class="modal-input" />
         <input ref="fileInput" type="file" @change="handleFileChange" accept="image/*" class="modal-file" />
-        
+
+        <br><br>
+
         <div class="actions">
-          <button @click="emit('close')" class="btn-secondary">Cancel</button>
-          <button @click="uploadImage" :disabled="!file || !title" class="btn-primary">
-            Upload & Encrypt
-          </button>
+            <SubtleButton @click="emit('close')" class="btn-secondary">
+                <template #text>Cancel</template>
+            </SubtleButton>
+            <GradientButton @click="uploadImage" :disabled="!file || !title" class="btn-primary">
+                <template #text>Upload to Cloud</template>
+            </GradientButton>
         </div>
       </div>
     </div>
@@ -72,13 +81,17 @@ const uploadImage = async () => {
   align-items: center;
   z-index: 1000;
 }
+
 .modal-content {
   background: white;
   padding: 2rem;
   border-radius: 8px;
-  width: 400px;
+  width: 600px;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+}
+
+.actions {
+    float: right;
 }
 </style>
