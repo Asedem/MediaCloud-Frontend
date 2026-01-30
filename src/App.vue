@@ -1,25 +1,23 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
-import SidebarButton from './components/SidebarButton.vue';
-import ImageIcon from './components/icons/ImageIcon.vue';
-import ImageIconFilled from './components/icons/ImageIconFilled.vue';
-import VideoIcon from './components/icons/VideoIcon.vue';
-import VideoIconFilled from './components/icons/VideoIconFilled.vue';
-import ComponentIcon from './components/icons/ComponentIcon.vue';
-import ComponentIconFilled from './components/icons/ComponentIconFilled.vue';
-import HomeIcon from './components/icons/HomeIcon.vue';
-import HomeIconFilled from './components/icons/HomeIconFilled.vue';
-
+import SidebarButton from './components/SidebarButton.vue'
+import ImageIcon from './components/icons/ImageIcon.vue'
+import ImageIconFilled from './components/icons/ImageIconFilled.vue'
+import VideoIcon from './components/icons/VideoIcon.vue'
+import VideoIconFilled from './components/icons/VideoIconFilled.vue'
+import ComponentIcon from './components/icons/ComponentIcon.vue'
+import ComponentIconFilled from './components/icons/ComponentIconFilled.vue'
+import HomeIcon from './components/icons/HomeIcon.vue'
+import HomeIconFilled from './components/icons/HomeIconFilled.vue'
 </script>
 
 <template>
   <div class="sidebar">
     <div class="profile">
-      <img src="./assets/mock_profile.png" alt="Profile Picture">
+      <img src="./assets/mock_profile.png" alt="Profile Picture" />
       <div class="pair">
         <p class="name">Lukas King</p>
-        <p class="plan">PRO MEMBER
-        </p>
+        <p class="plan">PRO MEMBER</p>
       </div>
     </div>
     <div class="navigation">
@@ -45,7 +43,7 @@ import HomeIconFilled from './components/icons/HomeIconFilled.vue';
       </SidebarButton>
     </div>
   </div>
-  <RouterView class="body"/>
+  <RouterView class="body" />
 </template>
 
 <style>
@@ -103,7 +101,7 @@ import HomeIconFilled from './components/icons/HomeIconFilled.vue';
 }
 
 .name {
-  color: var(--color-text)
+  color: var(--color-text);
 }
 
 .plan {

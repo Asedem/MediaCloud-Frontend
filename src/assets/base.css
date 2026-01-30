@@ -27,14 +27,14 @@
     --color-border: #1e293b;
     --color-border-hover: #2a374d;
 
-    --color-text:#ffffff;
+    --color-text: #ffffff;
     --color-subtext: #64748b;
 
     --color-foreward: #000000;
     --color-foreward-modifier: 75%;
 
-  --color-backward: #ffffff;
-  --color-backward-modifier: 50%;
+    --color-backward: #ffffff;
+    --color-backward-modifier: 50%;
   }
 }
 
@@ -71,7 +71,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   color: var(--color-text);
 }
 
