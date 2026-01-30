@@ -9,7 +9,7 @@ import ImageIconFilled from '@/components/icons/ImageIconFilled.vue'
 import IconToggle from '@/components/IconToggle.vue'
 import SearchBar from '@/components/SearchBar.vue'
 import SidebarButton from '@/components/SidebarButton.vue'
-import Tag from '@/components/Tag.vue'
+import TagDisplay from '@/components/TagDisplay.vue'
 import ToggleDropdown from '@/components/ToggleDropdown.vue'
 </script>
 
@@ -38,12 +38,12 @@ import ToggleDropdown from '@/components/ToggleDropdown.vue'
 
     <h2>Tag</h2>
     <p>How a tag is displayed below a represtentation of a media</p>
-    <Tag color="#2563eb">
+    <TagDisplay color="#2563eb">
       <template #text>CLASSIC</template>
-    </Tag>
-    <Tag color="#9333ea">
+    </TagDisplay>
+    <TagDisplay color="#9333ea">
       <template #text>MANUAL</template>
-    </Tag>
+    </TagDisplay>
 
     <h2>Search Bar</h2>
     <p>The Search bar on top of every side, that displays media</p>
@@ -51,7 +51,7 @@ import ToggleDropdown from '@/components/ToggleDropdown.vue'
 
     <h2>Toggle Dropdown</h2>
     <p>A dropdown menu to expose multiple toggle buttons</p>
-    <ToggleDropdown :items="['test', 'hello']">
+    <ToggleDropdown :items="['Item 1', 'Item 2', 'Item 3']">
       <template #text>Option</template>
     </ToggleDropdown>
 
