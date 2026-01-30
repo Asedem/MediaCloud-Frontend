@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ContrastButton from '@/components/ContrastButton.vue'
 import GradientButton from '@/components/GradientButton.vue'
 import BookmarkIcon from '@/components/icons/BookmarkIcon.vue'
 import BookmarksIcon from '@/components/icons/BookmarksIcon.vue'
@@ -9,7 +10,9 @@ import ImageIconFilled from '@/components/icons/ImageIconFilled.vue'
 import IconToggle from '@/components/IconToggle.vue'
 import SearchBar from '@/components/SearchBar.vue'
 import SidebarButton from '@/components/SidebarButton.vue'
+import SubtleButton from '@/components/SubtleButton.vue'
 import TagDisplay from '@/components/TagDisplay.vue'
+import TextToggle from '@/components/TextToggle.vue'
 import ToggleDropdown from '@/components/ToggleDropdown.vue'
 </script>
 
@@ -17,11 +20,23 @@ import ToggleDropdown from '@/components/ToggleDropdown.vue'
   <main>
     <h1>Component Library</h1>
 
-    <h2>Main Button</h2>
+    <h2>Gradient Button</h2>
     <p>The main Button for uploading media, or selecting all media</p>
     <GradientButton>
       <template #text>Upload Media</template>
     </GradientButton>
+
+    <h2>Contrast Button</h2>
+    <p>Button used for secondary, but important tasks</p>
+    <ContrastButton>
+      <template #text>Fetch</template>
+    </ContrastButton>
+
+    <h2>Subtle Button</h2>
+    <p>A Button used to unlikely options</p>
+    <SubtleButton>
+      <template #text>Cancel</template>
+    </SubtleButton>
 
     <h2>Sidebar Button</h2>
     <p>The button used for navigation, sitting in the sidebar</p>
@@ -61,6 +76,13 @@ import ToggleDropdown from '@/components/ToggleDropdown.vue'
       <template #icon-left><BookmarkIcon></BookmarkIcon></template>
       <template #icon-right><BookmarksIcon></BookmarksIcon></template>
     </IconToggle>
+
+    <h2>Text Toggle</h2>
+    <p>A Toggle, that can toggle between 2 stated, indecated by text</p>
+    <TextToggle>
+      <template #left>First text</template>
+      <template #right>Second text</template>
+    </TextToggle>
   </main>
 </template>
 

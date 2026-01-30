@@ -28,7 +28,7 @@ const toggle = () => {
   align-items: center;
   padding: 6px;
   background: var(--color-background-soft);
-  border-radius: 12px;
+  border-radius: 16px;
   cursor: pointer;
   user-select: none;
   width: fit-content;
