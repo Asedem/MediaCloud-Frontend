@@ -44,7 +44,7 @@ onMounted(fetchImages);
 
     <div class="gallery">
        <div v-for="img in images" :key="img.id" class="image-card">
-          <img :src="`/api/images/${img.id}/raw`" :alt="img.title" />
+          <img :src="`/api/images/${img.id}/preview`" :alt="img.title" />
           <p>{{ img.title }}</p>
        </div>
     </div>
