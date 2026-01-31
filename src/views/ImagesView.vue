@@ -2,11 +2,14 @@
 import { ref, onMounted } from 'vue'
 import GradientButton from '@/components/GradientButton.vue'
 import IconInput from '@/components/IconInput.vue'
-import UploadModal from '@/components/UploadModal.vue'
+import ImageUploadModal from '@/components/ImageUploadModal.vue';
+import ImageViewModal from '@/components/ImageViewModal.vue';
 
 interface ImageMetadata { id: number; title: string; }
 const images = ref<ImageMetadata[]>([]);
 const isModalOpen = ref(false);
+const isImageViewOpen = ref(false);
+const imageViewId = ref(-1);
 
 const fetchImages = async () => {
   try {
@@ -21,6 +24,11 @@ const deleteImage = async (id: number) => {
   await fetch(`/api/images/${id}`, { method: 'DELETE' });
   fetchImages();
 };
+
+function openImage(id: number) {
+    imageViewId.value = id;
+    isImageViewOpen.value = true;
+}
 
 onMounted(fetchImages);
 </script>
@@ -41,14 +49,20 @@ onMounted(fetchImages);
       </GradientButton>
     </div>
 
-    <UploadModal 
+    <ImageUploadModal 
       :isOpen="isModalOpen" 
       @close="isModalOpen = false" 
       @uploaded="fetchImages" 
     />
 
+    <ImageViewModal 
+      :id="imageViewId"
+      :isOpen="isImageViewOpen" 
+      @close="isImageViewOpen = false"
+    />
+
     <div class="gallery">
-       <div v-for="img in images" :key="img.id" class="image-card">
+       <div v-for="img in images" :key="img.id" class="image-card" @click="openImage(img.id)">
           <img :src="`/api/images/${img.id}/preview`" :alt="img.title" />
           <div class="card-footer">
             <p>{{ img.title }}</p>
