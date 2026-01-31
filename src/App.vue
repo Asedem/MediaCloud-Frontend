@@ -9,6 +9,8 @@ import ComponentIcon from './components/icons/ComponentIcon.vue'
 import ComponentIconFilled from './components/icons/ComponentIconFilled.vue'
 import HomeIcon from './components/icons/HomeIcon.vue'
 import HomeIconFilled from './components/icons/HomeIconFilled.vue'
+import TagIcon from './components/icons/TagIcon.vue'
+import TagIconFilled from './components/icons/TagIconFilled.vue'
 </script>
 
 <template>
@@ -35,6 +37,11 @@ import HomeIconFilled from './components/icons/HomeIconFilled.vue'
 				<template #icon><VideoIcon></VideoIcon></template>
 				<template #icon-active><VideoIconFilled></VideoIconFilled></template>
 				<template #text>Videos</template>
+			</SidebarButton>
+			<SidebarButton route="/categories" class="sidebar-button">
+				<template #icon><TagIcon></TagIcon></template>
+				<template #icon-active><TagIconFilled></TagIconFilled></template>
+				<template #text>Categories</template>
 			</SidebarButton>
 			<SidebarButton route="/components" class="sidebar-button">
 				<template #icon><ComponentIcon></ComponentIcon></template>
