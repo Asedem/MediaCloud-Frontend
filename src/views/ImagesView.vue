@@ -17,6 +17,11 @@ const fetchImages = async () => {
   }
 };
 
+const deleteImage = async (id: number) => {
+  await fetch(`/api/images/${id}`, { method: 'DELETE' });
+  fetchImages();
+};
+
 onMounted(fetchImages);
 </script>
 
@@ -45,7 +50,10 @@ onMounted(fetchImages);
     <div class="gallery">
        <div v-for="img in images" :key="img.id" class="image-card">
           <img :src="`/api/images/${img.id}/preview`" :alt="img.title" />
-          <p>{{ img.title }}</p>
+          <div class="card-footer">
+            <p>{{ img.title }}</p>
+            <button class="delete-btn" @click="deleteImage(img.id)">Delete</button>
+          </div>
        </div>
     </div>
   </main>
@@ -79,4 +87,18 @@ onMounted(fetchImages);
   gap: 1rem;
 }
 .image-card img { width: 100%; border-radius: 8px; }
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+}
+.delete-btn {
+  background: #ff4d4f;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
 </style>
