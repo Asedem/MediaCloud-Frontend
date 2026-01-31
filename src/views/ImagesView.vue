@@ -62,8 +62,8 @@ onMounted(fetchImages);
     />
 
     <div class="gallery">
-       <div v-for="img in images" :key="img.id" class="image-card" @click="openImage(img.id)">
-          <img :src="`/api/images/${img.id}/preview`" :alt="img.title" />
+       <div v-for="img in images" :key="img.id" class="image-card">
+          <img :src="`/api/images/${img.id}/preview`" :alt="img.title"  @click="openImage(img.id)" />
           <div class="card-footer">
             <p>{{ img.title }}</p>
             <button class="delete-btn" @click="deleteImage(img.id)">Delete</button>
