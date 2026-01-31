@@ -2,6 +2,9 @@
 	--color-background: #ffffff;
 	--color-background-soft: #f8fafc;
 
+	--color-background-panel: var(--color-background-soft);
+	--color-background-card: var(--color-background);
+
 	--color-border: #f1f5f9;
 	--color-border-hover: #cbd5e1;
 
@@ -23,6 +26,9 @@
 	:root {
 		--color-background: #0f172a;
 		--color-background-soft: #1e293b;
+
+		--color-background-panel: var(--color-background);
+		--color-background-card: var(--color-background-soft);
 
 		--color-border: #1e293b;
 		--color-border-hover: #2a374d;

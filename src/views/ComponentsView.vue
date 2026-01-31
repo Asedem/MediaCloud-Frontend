@@ -95,7 +95,7 @@ import ToggleDropdown from '@/components/ToggleDropdown.vue'
 
 		<h2>Image Card</h2>
 		<p>The card to display the images and corresponding data</p>
-		<ImageCrad :id="3" title="Test"></ImageCrad>
+		<ImageCrad :id="1" title="Card title" class="image-card"></ImageCrad>
 	</main>
 </template>
 
@@ -109,7 +109,12 @@ main {
 h2 {
 	margin-top: 24px;
 }
+
 p {
 	margin-bottom: 10px;
+}
+
+.image-card {
+	width: 250px;
 }
 </style>

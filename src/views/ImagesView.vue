@@ -5,6 +5,7 @@ import IconInput from '@/components/IconInput.vue'
 import ImageUploadModal from '@/components/ImageUploadModal.vue'
 import ImageViewModal from '@/components/ImageViewModal.vue'
 import ImageCrad from '@/components/ImageCrad.vue'
+import SearchIcon from '@/components/icons/SearchIcon.vue'
 
 interface ImageMetadata {
 	id: number
@@ -40,7 +41,9 @@ onMounted(fetchImages)
 <template>
 	<main>
 		<div class="header">
-			<IconInput class="search"></IconInput>
+			<IconInput class="search" placeholder="Serach for anything...">
+				<template #icon><SearchIcon></SearchIcon></template>
+			</IconInput>
 			<div class="vertical-line"></div>
 			<GradientButton class="new" @click="isModalOpen = true">
 				<template #text>Upload Media</template>
@@ -70,11 +73,16 @@ onMounted(fetchImages)
 </template>
 
 <style scoped>
+main {
+	background: var(--color-background-panel);
+}
+
 .header,
 .filter {
 	width: 100%;
 	height: 5rem;
 	border-bottom: 1px solid var(--color-border);
+	background: var(--color-background);
 	display: flex;
 	justify-content: left;
 	align-items: center;
