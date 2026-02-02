@@ -1,128 +1,174 @@
 <template>
-	<main style="padding: 20px; font-family: sans-serif">
-		<h1>MediaCloud Tag Manager</h1>
+    <main style="padding: 20px">
+        <h1>MediaCloud Manager</h1>
 
-		<section style="border: 1px solid #ccc; padding: 15px; margin-bottom: 20px">
-			<h3>Create New Category</h3>
-			<input v-model="newCategoryTitle" placeholder="Category Title" />
-			<button @click="addCategory">Add Category</button>
-		</section>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+            <section>
+                <div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 20px">
+                    <h3>Create New Category</h3>
+                    <input v-model="newCategoryTitle" placeholder="Category Title" />
+                    <button @click="addCategory">Add Category</button>
+                </div>
 
-		<section style="border: 1px solid #ccc; padding: 15px; margin-bottom: 20px">
-			<h3>Add Tag to Category</h3>
-			<select v-model="newTag.categoryId">
-				<option :value="null">Select a Category</option>
-				<option v-for="cat in categories" :key="cat.id" :value="cat.id">
-					{{ cat.title }}
-				</option>
-			</select>
-			<input v-model="newTag.title" placeholder="Tag Title" />
-			<input v-model="newTag.description" placeholder="Description" />
-			<input v-model="newTag.color" type="color" title="Pick a color" />
-			<button @click="addTag">Add Tag</button>
-		</section>
+                <div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 20px">
+                    <h3>Add Tag to Category</h3>
+                    <select v-model="newTag.categoryId">
+                        <option :value="null">Select a Category</option>
+                        <option v-for="cat in categories" :key="cat.id" :value="cat.id">
+                            {{ cat.title }}
+                        </option>
+                    </select>
+                    <input v-model="newTag.title" placeholder="Tag Title" />
+                    <input v-model="newTag.description" placeholder="Description" />
+                    <input v-model="newTag.color" type="color" title="Pick a color" />
+                    <button @click="addTag">Add Tag</button>
+                </div>
 
-		<hr />
+                <hr />
 
-		<section>
-			<h2>Categories & Tags</h2>
-			<button @click="fetchData">Refresh Data</button>
+                <h2>Categories & Tags</h2>
+                <button @click="fetchData">Refresh All Data</button>
 
-			<div v-for="category in categories" :key="category.id" style="margin-top: 20px">
-				<h4 style="margin-bottom: 5px">
-					{{ category.title }} <small>(ID: {{ category.id }})</small>
-				</h4>
+                <div v-for="category in categories" :key="category.id" style="margin-top: 20px">
+                    <h4 style="margin-bottom: 5px">
+                        {{ category.title }} <small>(ID: {{ category.id }})</small>
+                    </h4>
 
-				<ul v-if="category.tags && category.tags.length">
-					<li v-for="tag in category.tags" :key="tag.id" :style="{ color: tag.color }">
-						<strong>{{ tag.title }}</strong
-						>: {{ tag.description }}
-					</li>
-				</ul>
-				<p v-else style="font-size: 0.9em; color: gray">No tags in this category.</p>
-			</div>
-		</section>
-	</main>
+                    <div v-if="category.tags && category.tags.length">
+                        <TagDisplay v-for="tag in category.tags" :key="tag.id" :color="tag.color">
+                            <template #text>{{ tag.title }}</template>
+                        </TagDisplay>
+                    </div>
+                    <p v-else style="font-size: 0.9em; color: gray">No tags in this category.</p>
+                </div>
+            </section>
+
+            <section style="border-left: 1px solid #eee; padding-left: 20px;">
+                <h2>Apply Tags to Images</h2>
+                
+                <div v-for="image in images" :key="image.id" style="border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 8px;">
+                    <div style="display: flex; gap: 15px;">
+                        <img :src="`/api/images/${image.id}/preview`" style="width: 100px; height: 100px; object-fit: cover; border-radius: 4px;" />
+                        
+                        <div style="flex-grow: 1;">
+                            <h3 style="margin-top: 0">{{ image.title }}</h3>
+                            
+                            <div style="margin-bottom: 10px;">
+                                <p style="font-size: 0.8em; color: #666; margin-bottom: 4px;">Current Tags:</p>
+                                <TagDisplay v-for="tag in image.tags" :key="tag.id" :color="tag.color">
+                                    <template #text>{{ tag.title }}</template>
+                                </TagDisplay>
+                            </div>
+
+                            <div style="background: #f9f9f9; padding: 10px; border-radius: 4px;">
+                                <label style="display: block; font-size: 0.8em; margin-bottom: 5px;">Select Tags to Apply:</label>
+                                <select v-model="selectedTagsForImage[image.id]" multiple style="width: 100%; height: 80px;">
+                                    <optgroup v-for="cat in categories" :key="cat.id" :label="cat.title">
+                                        <option v-for="tag in cat.tags" :key="tag.id" :value="tag.id">
+                                            {{ tag.title }}
+                                        </option>
+                                    </optgroup>
+                                </select>
+                                <button @click="applyTagsToImage(image.id)" style="margin-top: 8px; width: 100%;">
+                                    Update Image Tags
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
 </template>
 
 <script setup>
+import TagDisplay from '@/components/TagDisplay.vue'
 import { ref, onMounted } from 'vue'
 
 // --- State ---
 const categories = ref([])
+const images = ref([])
+const selectedTagsForImage = ref({}) // Dictionary: { imageId: [tagId1, tagId2] }
+
 const newCategoryTitle = ref('')
 const newTag = ref({
-	title: '',
-	description: '',
-	color: '#3498db',
-	categoryId: null,
+    title: '',
+    description: '',
+    color: '#3498db',
+    categoryId: null,
 })
 
-const API_BASE = '/api/tags'
+const API_TAGS = '/api/tags'
+const API_IMAGES = '/api/images'
 
 // --- Methods ---
 
-// GET /api/tags/categories
 const fetchData = async () => {
-	try {
-		const response = await fetch(`${API_BASE}/categories`)
-		if (response.ok) {
-			categories.value = await response.json()
-		}
-	} catch (error) {
-		console.error('Failed to fetch data:', error)
-	}
+    try {
+        // Fetch both tags and images simultaneously
+        const [catRes, imgRes] = await Promise.all([
+            fetch(`${API_TAGS}/categories`),
+            fetch(API_IMAGES)
+        ])
+
+        if (catRes.ok) categories.value = await catRes.json()
+        if (imgRes.ok) {
+            const imageData = await imgRes.json()
+            images.value = imageData
+            
+            // Map existing image tags to our selection state
+            imageData.forEach(img => {
+                selectedTagsForImage.value[img.id] = img.tags ? img.tags.map(t => t.id) : []
+            })
+        }
+    } catch (error) {
+        console.error('Failed to fetch data:', error)
+    }
 }
 
-// POST /api/tags/categories?title=...
 const addCategory = async () => {
-	if (!newCategoryTitle.value) return
-
-	try {
-		const response = await fetch(
-			`${API_BASE}/categories?title=${encodeURIComponent(newCategoryTitle.value)}`,
-			{
-				method: 'POST',
-			},
-		)
-		if (response.ok) {
-			newCategoryTitle.value = ''
-			fetchData() // Refresh list
-		}
-	} catch (error) {
-		console.error('Error adding category:', error)
-	}
+    if (!newCategoryTitle.value) return
+    try {
+        const response = await fetch(`${API_TAGS}/categories?title=${encodeURIComponent(newCategoryTitle.value)}`, { method: 'POST' })
+        if (response.ok) {
+            newCategoryTitle.value = ''
+            fetchData()
+        }
+    } catch (e) { console.error(e) }
 }
 
-// POST /api/tags?title=...&description=...&color=...&categoryId=...
 const addTag = async () => {
-	const { title, description, color, categoryId } = newTag.value
-	if (!title || !categoryId) {
-		alert('Title and Category are required')
-		return
-	}
-
-	const params = new URLSearchParams({
-		title,
-		description,
-		color,
-		categoryId,
-	})
-
-	try {
-		const response = await fetch(`${API_BASE}?${params.toString()}`, {
-			method: 'POST',
-		})
-		if (response.ok) {
-			// Reset tag form
-			newTag.value = { title: '', description: '', color: '#3498db', categoryId: null }
-			fetchData() // Refresh list
-		}
-	} catch (error) {
-		console.error('Error adding tag:', error)
-	}
+    const { title, description, color, categoryId } = newTag.value
+    if (!title || !categoryId) {
+        alert('Title and Category are required')
+        return
+    }
+    const params = new URLSearchParams({ title, description, color, categoryId })
+    try {
+        const response = await fetch(`${API_TAGS}?${params.toString()}`, { method: 'POST' })
+        if (response.ok) {
+            newTag.value = { title: '', description: '', color: '#3498db', categoryId: null }
+            fetchData()
+        }
+    } catch (e) { console.error(e) }
 }
 
-// Load initial data
+const applyTagsToImage = async (imageId) => {
+    const tagIds = selectedTagsForImage.value[imageId]
+    try {
+        const response = await fetch(`${API_IMAGES}/${imageId}/tags`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(tagIds)
+        })
+        if (response.ok) {
+            fetchData() // Refresh to show updated tags
+            alert('Image tags updated!')
+        }
+    } catch (error) {
+        console.error('Error updating image tags:', error)
+    }
+}
+
 onMounted(fetchData)
 </script>
