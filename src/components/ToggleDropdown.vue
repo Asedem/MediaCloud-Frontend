@@ -4,23 +4,29 @@ import DropdownIcon from './icons/DropdownIcon.vue'
 
 const props = defineProps<{
 	items: string[]
+	modelValue?: string[]
+}>()
+
+const emit = defineEmits<{
+	(e: 'update:modelValue', selected: string[]): void
 }>()
 
 const isOpen = ref(false)
-const selectedItems = ref<string[]>([])
-
 const toggleDropdown = () => (isOpen.value = !isOpen.value)
 
 const toggleItem = (item: string) => {
-	const index = selectedItems.value.indexOf(item)
+	const current = [...(props.modelValue || [])]
+	const index = current.indexOf(item)
+
 	if (index === -1) {
-		selectedItems.value.push(item)
+		current.push(item)
 	} else {
-		selectedItems.value.splice(index, 1)
+		current.splice(index, 1)
 	}
+	emit('update:modelValue', current)
 }
 
-const isSelected = (item: string) => selectedItems.value.includes(item)
+const isSelected = (item: string) => props.modelValue?.includes(item) || false
 </script>
 
 <template>
