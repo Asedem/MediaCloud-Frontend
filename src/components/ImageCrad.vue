@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import TagDisplay from './TagDisplay.vue'
 
-const props = defineProps<{ id: number; title: string }>()
+const props = defineProps<{ id: number; title: string; tags: any }>()
 const emit = defineEmits(['open', 'delete'])
 </script>
 
@@ -13,7 +13,11 @@ const emit = defineEmits(['open', 'delete'])
 
 		<div class="card-body">
 			<h2 class="card-title">{{ title }}</h2>
-			<div class="actions-row">
+			<div class="tag-row">
+				<TagDisplay v-for="tag in tags" :key="tag.id" :color="tag.color">
+					<template #text>{{ tag.title }}</template>
+				</TagDisplay>
+
 				<TagDisplay color="#ff0000" @click="emit('delete')">
 					<template #text>Delete</template>
 				</TagDisplay>
@@ -63,8 +67,10 @@ const emit = defineEmits(['open', 'delete'])
 	color: var(--color-text);
 }
 
-.actions-row {
+.tag-row {
 	display: flex;
-	gap: 12px;
+	flex-wrap: wrap;
+	gap: 8px 12px;
+	align-items: center;
 }
 </style>

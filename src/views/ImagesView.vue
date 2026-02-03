@@ -10,7 +10,15 @@ import SearchIcon from '@/components/icons/SearchIcon.vue'
 interface ImageMetadata {
 	id: number
 	title: string
+	tags: Tag[]
 }
+
+interface Tag {
+	title: string
+	description: string
+	color: string
+}
+
 const images = ref<ImageMetadata[]>([])
 const isModalOpen = ref(false)
 const isImageViewOpen = ref(false)
@@ -65,6 +73,7 @@ onMounted(fetchImages)
 				v-for="img in images"
 				:id="img.id"
 				:title="img.title"
+				:tags="img.tags"
 				@open="openImage(img.id)"
 				@delete="deleteImage(img.id)"
 			></ImageCrad>
@@ -101,8 +110,33 @@ main {
 
 .gallery {
 	padding: 2rem;
-	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-	gap: 1rem;
+	column-count: 4;
+	column-gap: 1.6rem;
+	width: 100%;
+}
+
+.gallery > * {
+	break-inside: avoid;
+	margin-bottom: 1.6rem;
+	display: inline-block;
+	width: 100%;
+}
+
+@media (max-width: 1400px) {
+	.gallery {
+		column-count: 3;
+	}
+}
+
+@media (max-width: 1000px) {
+	.gallery {
+		column-count: 2;
+	}
+}
+
+@media (max-width: 700px) {
+	.gallery {
+		column-count: 1;
+	}
 }
 </style>

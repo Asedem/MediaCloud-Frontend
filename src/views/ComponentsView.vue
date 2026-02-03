@@ -95,7 +95,13 @@ import ToggleDropdown from '@/components/ToggleDropdown.vue'
 
 		<h2>Image Card</h2>
 		<p>The card to display the images and corresponding data</p>
-		<ImageCrad :id="1" title="Card title" class="image-card"></ImageCrad>
+		<ImageCrad
+			:id="1"
+			title="Card title"
+			:tags="[{ title: 'Tag', color: '#2352cc' }]"
+			class="image-card"
+		>
+		</ImageCrad>
 	</main>
 </template>
 
