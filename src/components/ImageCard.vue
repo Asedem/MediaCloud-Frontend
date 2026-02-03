@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import type { Tag } from '@/models/tag'
 import TagDisplay from './TagDisplay.vue'
 
-const props = defineProps<{ id: number; title: string; tags: any }>()
+const props = defineProps<{ id: number; title: string; tags: Tag[] }>()
 const emit = defineEmits(['open', 'delete'])
 </script>
 

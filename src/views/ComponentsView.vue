@@ -10,7 +10,7 @@ import ImageIcon from '@/components/icons/ImageIcon.vue'
 import ImageIconFilled from '@/components/icons/ImageIconFilled.vue'
 import SearchIcon from '@/components/icons/SearchIcon.vue'
 import IconToggle from '@/components/IconToggle.vue'
-import ImageCrad from '@/components/ImageCrad.vue'
+import ImageCard from '@/components/ImageCard.vue'
 import SidebarButton from '@/components/SidebarButton.vue'
 import SimpleInput from '@/components/SimpleInput.vue'
 import SubtleButton from '@/components/SubtleButton.vue'
@@ -95,13 +95,13 @@ import ToggleDropdown from '@/components/ToggleDropdown.vue'
 
 		<h2>Image Card</h2>
 		<p>The card to display the images and corresponding data</p>
-		<ImageCrad
+		<ImageCard
 			:id="1"
 			title="Card title"
-			:tags="[{ title: 'Tag', color: '#2352cc' }]"
+			:tags="[{ id: 1, title: 'Tag', description: '', color: '#2352cc' }]"
 			class="image-card"
 		>
-		</ImageCrad>
+		</ImageCard>
 	</main>
 </template>
 

@@ -4,22 +4,14 @@ import GradientButton from '@/components/GradientButton.vue'
 import IconInput from '@/components/IconInput.vue'
 import ImageUploadModal from '@/components/ImageUploadModal.vue'
 import ImageViewModal from '@/components/ImageViewModal.vue'
-import ImageCrad from '@/components/ImageCrad.vue'
 import SearchIcon from '@/components/icons/SearchIcon.vue'
+import ImageCard from '@/components/ImageCard.vue'
+import type { Image } from '@/models/image'
+import type { TagCategory } from '@/models/tag'
+import ToggleDropdown from '@/components/ToggleDropdown.vue'
 
-interface ImageMetadata {
-	id: number
-	title: string
-	tags: Tag[]
-}
-
-interface Tag {
-	title: string
-	description: string
-	color: string
-}
-
-const images = ref<ImageMetadata[]>([])
+const images = ref<Image[]>([])
+const categories = ref<TagCategory[]>([])
 const isModalOpen = ref(false)
 const isImageViewOpen = ref(false)
 const imageViewId = ref(-1)
@@ -33,6 +25,15 @@ const fetchImages = async () => {
 	}
 }
 
+const fetchCategories = async () => {
+	try {
+		const response = await fetch('/api/tags/categories')
+		if (response.ok) categories.value = await response.json()
+	} catch (error) {
+		console.error('Failed to fetch categories:', error)
+	}
+}
+
 const deleteImage = async (id: number) => {
 	await fetch(`/api/images/${id}`, { method: 'DELETE' })
 	fetchImages()
@@ -43,7 +44,10 @@ function openImage(id: number) {
 	isImageViewOpen.value = true
 }
 
-onMounted(fetchImages)
+onMounted(() => {
+	fetchImages()
+	fetchCategories()
+})
 </script>
 
 <template>
@@ -62,6 +66,13 @@ onMounted(fetchImages)
 			<GradientButton class="all" @click="fetchImages">
 				<template #text>Show all Media</template>
 			</GradientButton>
+			<ToggleDropdown
+				class="drop"
+				v-for="category in categories"
+				:items="category.tags.map((tag) => tag.title)"
+			>
+				<template #text>{{ category.title }}</template>
+			</ToggleDropdown>
 		</div>
 
 		<ImageUploadModal :isOpen="isModalOpen" @close="isModalOpen = false" @uploaded="fetchImages" />
@@ -69,14 +80,14 @@ onMounted(fetchImages)
 		<ImageViewModal :id="imageViewId" :isOpen="isImageViewOpen" @close="isImageViewOpen = false" />
 
 		<div class="gallery">
-			<ImageCrad
+			<ImageCard
 				v-for="img in images"
 				:id="img.id"
 				:title="img.title"
 				:tags="img.tags"
 				@open="openImage(img.id)"
 				@delete="deleteImage(img.id)"
-			></ImageCrad>
+			></ImageCard>
 		</div>
 	</main>
 </template>
@@ -96,6 +107,10 @@ main {
 	justify-content: left;
 	align-items: center;
 	padding: 0 32px;
+}
+
+.drop {
+	margin-left: 10px;
 }
 
 .search {
