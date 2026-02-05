@@ -12,16 +12,60 @@
 
 				<div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 20px">
 					<h3>Add Tag to Category</h3>
-					<select v-model="newTag.categoryId">
+					<select
+						v-model="newTag.categoryId"
+						style="display: block; margin-bottom: 10px; width: 100%"
+					>
 						<option :value="null">Select a Category</option>
 						<option v-for="cat in categories" :key="cat.id" :value="cat.id">
 							{{ cat.title }}
 						</option>
 					</select>
-					<input v-model="newTag.title" placeholder="Tag Title" />
-					<input v-model="newTag.description" placeholder="Description" />
-					<input v-model="newTag.color" type="color" title="Pick a color" />
-					<button @click="addTag">Add Tag</button>
+
+					<div style="display: flex; gap: 10px; margin-bottom: 10px">
+						<input v-model="newTag.title" placeholder="Tag Title" style="flex: 1" />
+						<input v-model="newTag.description" placeholder="Description" style="flex: 2" />
+					</div>
+
+					<div style="margin-bottom: 15px">
+						<p style="font-size: 0.8em; margin-bottom: 8px">Select Color:</p>
+						<div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap">
+							<button
+								v-for="color in colorPalette"
+								:key="color"
+								type="button"
+								@click="newTag.color = color"
+								:style="{
+									backgroundColor: color,
+									width: '28px',
+									height: '28px',
+									border: newTag.color === color ? '2px solid #000' : '1px solid #ccc',
+									borderRadius: '4px',
+									cursor: 'pointer',
+								}"
+							></button>
+							<div
+								style="
+									display: flex;
+									align-items: center;
+									gap: 5px;
+									margin-left: 10px;
+									border-left: 1px solid #ddd;
+									padding-left: 10px;
+								"
+							>
+								<input
+									v-model="newTag.color"
+									type="color"
+									id="customColor"
+									style="cursor: pointer"
+								/>
+								<label for="customColor" style="font-size: 0.7em">Custom</label>
+							</div>
+						</div>
+					</div>
+
+					<button @click="addTag" style="width: 100%">Add Tag</button>
 				</div>
 
 				<hr />
@@ -98,12 +142,22 @@
 import TagDisplay from '@/components/TagDisplay.vue'
 import { ref, onMounted } from 'vue'
 
-// --- State ---
 const categories = ref([])
 const images = ref([])
-const selectedTagsForImage = ref({}) // Dictionary: { imageId: [tagId1, tagId2] }
-
+const selectedTagsForImage = ref({})
 const newCategoryTitle = ref('')
+
+const colorPalette = [
+	'#3498db',
+	'#e74c3c',
+	'#2ecc71',
+	'#f1c40f',
+	'#9b59b6',
+	'#e67e22',
+	'#1abc9c',
+	'#34495e',
+]
+
 const newTag = ref({
 	title: '',
 	description: '',
@@ -114,19 +168,13 @@ const newTag = ref({
 const API_TAGS = '/api/tags'
 const API_IMAGES = '/api/images'
 
-// --- Methods ---
-
 const fetchData = async () => {
 	try {
-		// Fetch both tags and images simultaneously
 		const [catRes, imgRes] = await Promise.all([fetch(`${API_TAGS}/categories`), fetch(API_IMAGES)])
-
 		if (catRes.ok) categories.value = await catRes.json()
 		if (imgRes.ok) {
 			const imageData = await imgRes.json()
 			images.value = imageData
-
-			// Map existing image tags to our selection state
 			imageData.forEach((img) => {
 				selectedTagsForImage.value[img.id] = img.tags ? img.tags.map((t) => t.id) : []
 			})
@@ -179,7 +227,7 @@ const applyTagsToImage = async (imageId) => {
 			body: JSON.stringify(tagIds),
 		})
 		if (response.ok) {
-			fetchData() // Refresh to show updated tags
+			fetchData()
 			alert('Image tags updated!')
 		}
 	} catch (error) {
