@@ -1,4 +1,4 @@
-<template>
+<!--<template>
 	<main style="padding: 20px">
 		<h1>MediaCloud Manager</h1>
 
@@ -138,7 +138,7 @@
 	</main>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import TagDisplay from '@/components/TagDisplay.vue'
 import { ref, onMounted } from 'vue'
 
@@ -237,3 +237,99 @@ const applyTagsToImage = async (imageId) => {
 
 onMounted(fetchData)
 </script>
+-->
+
+<script setup lang="ts">
+import { ref, onMounted, computed } from 'vue'
+import GradientButton from '@/components/GradientButton.vue'
+import IconInput from '@/components/IconInput.vue'
+import SearchIcon from '@/components/icons/SearchIcon.vue'
+import type { TagCategory } from '@/models/tag'
+
+const categories = ref<TagCategory[]>([])
+const isModalOpen = ref(false)
+
+const fetchCategories = async () => {
+	try {
+		const response = await fetch('/api/tags/categories')
+		if (response.ok) categories.value = await response.json()
+	} catch (error) {
+		console.error(error)
+	}
+}
+
+const totalActiveTags = computed(() => {
+	return categories.value.reduce((acc, category) => {
+		return acc + (category.tags?.length || 0)
+	}, 0)
+})
+
+onMounted(() => {
+	fetchCategories()
+})
+</script>
+
+<template>
+	<main>
+		<div class="header">
+			<IconInput class="search" placeholder="Search tag categories...">
+				<template #icon><SearchIcon></SearchIcon></template>
+			</IconInput>
+			<div class="vertical-line"></div>
+			<GradientButton class="new" @click="isModalOpen = true">
+				<template #text>Create New Category</template>
+			</GradientButton>
+		</div>
+
+		<div class="filter">
+			<div>
+				<p>TOTAL CATEGORIES</p>
+				<h3>{{ categories.length }}</h3>
+			</div>
+			<div class="vertical-line"></div>
+			<div>
+				<p>ACTIVE TAGS</p>
+				<h3>
+					{{ totalActiveTags }}
+				</h3>
+			</div>
+		</div>
+
+		<div class="gallery"></div>
+	</main>
+</template>
+
+<style scoped>
+main {
+	background: var(--color-background-panel);
+}
+
+.header,
+.filter {
+	width: 100%;
+	height: 5rem;
+	border-bottom: 1px solid var(--color-border);
+	background: var(--color-background);
+	display: flex;
+	justify-content: left;
+	align-items: center;
+	padding: 0 32px;
+}
+
+.search {
+	width: 100%;
+}
+
+.vertical-line {
+	border-left: 1px solid var(--color-border);
+	height: 1.5em;
+	margin: 0 16px;
+}
+
+.gallery {
+	padding: 2rem;
+	column-count: 4;
+	column-gap: 1.6rem;
+	width: 100%;
+}
+</style>

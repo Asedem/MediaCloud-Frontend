@@ -201,10 +201,10 @@ onMounted(fetchData)
 }
 
 .modal-content {
-	background: white;
+	background: var(--color-background);
 	padding: 2rem;
 	border-radius: 8px;
-	width: 800px; /* Widened slightly for tags */
+	width: 800px;
 	max-width: 95vw;
 	max-height: 90vh;
 	overflow-y: auto;
@@ -235,7 +235,6 @@ hr {
 	gap: 30px;
 }
 
-/* Left Side Styles */
 .upload-box {
 	width: 100%;
 	min-height: 160px;
@@ -268,7 +267,6 @@ hr {
 	object-fit: contain;
 }
 
-/* Right Side / Tags Styles */
 .section-title {
 	font-size: 0.9em;
 	font-weight: 600;

@@ -89,7 +89,7 @@ onMounted(() => {
 <template>
 	<main>
 		<div class="header">
-			<IconInput class="search" placeholder="Search for anything...">
+			<IconInput class="search" placeholder="Search all images...">
 				<template #icon><SearchIcon></SearchIcon></template>
 			</IconInput>
 			<div class="vertical-line"></div>
