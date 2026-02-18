@@ -245,6 +245,7 @@ import GradientButton from '@/components/GradientButton.vue'
 import IconInput from '@/components/IconInput.vue'
 import SearchIcon from '@/components/icons/SearchIcon.vue'
 import type { TagCategory } from '@/models/tag'
+import CategoryCard from '@/components/CategoryCard.vue'
 
 const categories = ref<TagCategory[]>([])
 const isModalOpen = ref(false)
@@ -295,7 +296,13 @@ onMounted(() => {
 			</div>
 		</div>
 
-		<div class="gallery"></div>
+		<div class="gallery">
+			<CategoryCard
+				v-for="category in categories"
+				:key="category.id"
+				:category="category"
+			></CategoryCard>
+		</div>
 	</main>
 </template>
 
