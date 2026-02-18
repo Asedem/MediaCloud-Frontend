@@ -1,7 +1,12 @@
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, nextTick, watch } from 'vue'
 
-const isActive = ref(false)
+const props = defineProps<{
+	modelValue: boolean
+}>()
+
+const emit = defineEmits(['update:modelValue'])
+
 const containerRef = ref<HTMLElement | null>(null)
 const leftRef = ref<HTMLElement | null>(null)
 const rightRef = ref<HTMLElement | null>(null)
@@ -12,7 +17,7 @@ const indicatorStyle = ref({
 })
 
 const updateIndicator = () => {
-	const activeElement = isActive.value ? rightRef.value : leftRef.value
+	const activeElement = props.modelValue ? rightRef.value : leftRef.value
 	if (activeElement && containerRef.value) {
 		const containerRect = containerRef.value.getBoundingClientRect()
 		const activeRect = activeElement.getBoundingClientRect()
@@ -25,9 +30,15 @@ const updateIndicator = () => {
 }
 
 const toggle = () => {
-	isActive.value = !isActive.value
-	nextTick(updateIndicator)
+	emit('update:modelValue', !props.modelValue)
 }
+
+watch(
+	() => props.modelValue,
+	() => {
+		nextTick(updateIndicator)
+	},
+)
 
 onMounted(() => {
 	updateIndicator()
@@ -36,7 +47,12 @@ onMounted(() => {
 </script>
 
 <template>
-	<div ref="containerRef" id="text-toggle-container" @click="toggle" :class="{ active: isActive }">
+	<div
+		ref="containerRef"
+		id="text-toggle-container"
+		@click="toggle"
+		:class="{ active: props.modelValue }"
+	>
 		<div id="indicator" :style="indicatorStyle"></div>
 
 		<div ref="leftRef" class="label-wrapper left">

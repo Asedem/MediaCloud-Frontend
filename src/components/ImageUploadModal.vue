@@ -10,7 +10,10 @@ import type { TagCategory } from '@/models/tag'
 const props = defineProps<{ isOpen: boolean }>()
 const emit = defineEmits(['close', 'uploaded'])
 
+const isWebLink = ref(false)
+
 const title = ref<string>('')
+const webUrl = ref<string>('')
 const file = ref<File | null>(null)
 const fileInput = ref<HTMLInputElement | null>(null)
 const previewUrl = ref<string | null>(null)
@@ -44,6 +47,8 @@ watch(
 		} else {
 			title.value = ''
 			file.value = null
+			webUrl.value = ''
+			isWebLink.value = false
 			selectedTagIds.value = []
 			if (previewUrl.value) {
 				URL.revokeObjectURL(previewUrl.value)
@@ -65,35 +70,51 @@ const handleFileChange = (event: Event) => {
 }
 
 const uploadImage = async () => {
-	if (!file.value || !title.value) return
-
-	const formData = new FormData()
-	formData.append('title', title.value)
-	formData.append('file', file.value)
+	if (!title.value) return
 
 	try {
-		const response = await fetch('/api/images/upload', {
-			method: 'POST',
-			body: formData,
-		})
+		let imageData
 
-		if (response.ok) {
-			const imageData = await response.json()
+		if (isWebLink.value) {
+			const params = new URLSearchParams({
+				title: title.value,
+				sourceUrl: webUrl.value,
+			})
 
-			// If tags are selected, apply them to the new image ID
-			if (selectedTagIds.value.length > 0) {
-				await fetch(`/api/images/${imageData.id}/tags`, {
-					method: 'PUT',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify(selectedTagIds.value),
-				})
-			}
+			const response = await fetch(`/api/images/upload-remote?${params.toString()}`, {
+				method: 'POST',
+			})
 
-			emit('uploaded')
-			emit('close')
+			if (!response.ok) throw new Error('Remote upload failed')
+			imageData = await response.json()
+		} else {
+			if (!file.value) return
+			const formData = new FormData()
+			formData.append('title', title.value)
+			formData.append('file', file.value)
+
+			const response = await fetch('/api/images/upload', {
+				method: 'POST',
+				body: formData,
+			})
+
+			if (!response.ok) throw new Error('Local upload failed')
+			imageData = await response.json()
 		}
+
+		if (imageData && selectedTagIds.value.length > 0) {
+			await fetch(`/api/images/${imageData.id}/tags`, {
+				method: 'PUT',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(selectedTagIds.value),
+			})
+		}
+
+		emit('uploaded')
+		emit('close')
 	} catch (error) {
 		console.error('Upload failed:', error)
+		alert('Upload failed. Please ensure the link is direct and the server is running.')
 	}
 }
 
@@ -105,10 +126,16 @@ onMounted(fetchData)
 		<div class="modal-content">
 			<div class="header">
 				<div>
-					<h2>Upload from local disk</h2>
-					<p>Upload media directly from your machine</p>
+					<h2>{{ isWebLink ? 'Import from Web' : 'Upload from local disk' }}</h2>
+					<p>
+						{{
+							isWebLink
+								? 'Paste a direct link to an image'
+								: 'Upload media directly from your machine'
+						}}
+					</p>
 				</div>
-				<TextToggle>
+				<TextToggle v-model="isWebLink">
 					<template #left>Local Files</template>
 					<template #right>Web Link</template>
 				</TextToggle>
@@ -121,7 +148,23 @@ onMounted(fetchData)
 
 				<div class="upload-grid">
 					<div class="left-side">
-						<div class="upload-box" @click="fileInput?.click()">
+						<div v-if="isWebLink" class="link-input-area">
+							<SimpleInput v-model="webUrl" placeholder="https://example.com/image.jpg" />
+							<div class="url-preview-box" :class="{ 'has-content': webUrl }">
+								<img
+									v-if="webUrl"
+									:src="webUrl"
+									alt="URL preview"
+									class="image-preview"
+									@error="webUrl = ''"
+								/>
+								<div v-else class="upload-placeholder">
+									<p>Image preview will appear here</p>
+								</div>
+							</div>
+						</div>
+
+						<div v-else class="upload-box" @click="fileInput?.click()">
 							<input
 								ref="fileInput"
 								type="file"
@@ -175,8 +218,12 @@ onMounted(fetchData)
 					<SubtleButton @click="emit('close')" class="btn-secondary">
 						<template #text>Cancel</template>
 					</SubtleButton>
-					<GradientButton @click="uploadImage" :disabled="!file || !title" class="btn-primary">
-						<template #text>Upload to Cloud</template>
+					<GradientButton
+						@click="uploadImage"
+						:disabled="!title || (!isWebLink && !file) || (isWebLink && !webUrl)"
+						class="btn-primary"
+					>
+						<template #text>{{ isWebLink ? 'Save Link' : 'Upload to Cloud' }}</template>
 					</GradientButton>
 				</div>
 			</div>
@@ -235,6 +282,24 @@ hr {
 	gap: 30px;
 }
 
+.link-input-area {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.url-preview-box {
+	width: 100%;
+	min-height: 160px;
+	border: 1px solid var(--color-background-soft);
+	border-radius: 16px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	overflow: hidden;
+	background: var(--color-background-soft);
+}
+
 .upload-box {
 	width: 100%;
 	min-height: 160px;
@@ -265,6 +330,31 @@ hr {
 	max-height: 350px;
 	display: block;
 	object-fit: contain;
+}
+
+.preview-container {
+	width: 100%;
+	height: 100%;
+	position: relative;
+}
+
+.preview-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.4);
+	color: white;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	opacity: 0;
+	transition: opacity 0.2s;
+}
+
+.preview-container:hover .preview-overlay {
+	opacity: 1;
 }
 
 .section-title {
