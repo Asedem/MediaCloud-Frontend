@@ -138,7 +138,7 @@
 	</main>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import TagDisplay from '@/components/TagDisplay.vue'
 import { ref, onMounted } from 'vue'
 

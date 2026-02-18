@@ -16,7 +16,7 @@ defineProps(['placeholder'])
 <style scoped>
 #bar {
 	display: flex;
-	padding: 10px 24px;
+	padding: 10px 14px;
 	border: 2px solid transparent;
 	border-radius: 16px;
 	background: var(--color-background-soft);

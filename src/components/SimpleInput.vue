@@ -1,11 +1,17 @@
 <script setup lang="ts">
-defineProps(['placeholder'])
+defineProps(['placeholder', 'modelValue'])
+defineEmits(['update:modelValue'])
 </script>
 
 <template>
 	<div id="bar">
 		<div id="side">
-			<input type="text" :placeholder="placeholder" />
+			<input
+				type="text"
+				:placeholder="placeholder"
+				:value="modelValue"
+				@input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
+			/>
 		</div>
 	</div>
 </template>
@@ -13,7 +19,7 @@ defineProps(['placeholder'])
 <style scoped>
 #bar {
 	display: flex;
-	padding: 10px 24px;
+	padding: 10px 14px;
 	border: 2px solid transparent;
 	border-radius: 16px;
 	background: var(--color-background-soft);
