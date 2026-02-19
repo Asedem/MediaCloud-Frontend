@@ -1,5 +1,6 @@
 <script setup lang="ts">
-defineProps(['placeholder'])
+defineProps(['placeholder', 'modelValue'])
+defineEmits(['update:modelValue'])
 </script>
 
 <template>
@@ -8,7 +9,12 @@ defineProps(['placeholder'])
 			<div id="icon">
 				<slot name="icon"></slot>
 			</div>
-			<input type="text" :placeholder="placeholder" />
+			<input
+				type="text"
+				:placeholder="placeholder"
+				:value="modelValue"
+				@input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
+			/>
 		</div>
 	</div>
 </template>
@@ -29,6 +35,10 @@ defineProps(['placeholder'])
 		var(--color-primary),
 		var(--color-foreward) var(--color-backward-modifier)
 	);
+}
+
+#bar:focus-within #icon {
+	color: var(--color-primary);
 }
 
 #bar #side {
@@ -63,7 +73,7 @@ defineProps(['placeholder'])
 	color: var(--color-subtext);
 }
 
-#icon svg {
+#icon :deep(svg) {
 	display: block;
 	width: 100%;
 	height: 100%;
