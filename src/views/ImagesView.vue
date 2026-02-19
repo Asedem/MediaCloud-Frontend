@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, reactive } from 'vue'
+import { ref, onMounted, reactive, watch } from 'vue'
 import GradientButton from '@/components/GradientButton.vue'
 import IconInput from '@/components/IconInput.vue'
 import ImageUploadModal from '@/components/ImageUploadModal.vue'
@@ -15,13 +15,14 @@ const categories = ref<TagCategory[]>([])
 const isModalOpen = ref(false)
 const isImageViewOpen = ref(false)
 const imageViewId = ref(-1)
+const searchQuery = ref('')
 
 const selectedFilters = reactive<Record<string, string[]>>({})
 
 const fetchImages = async () => {
 	const allSelectedTitles = Object.values(selectedFilters).flat()
 
-	if (allSelectedTitles.length === 0) {
+	if (allSelectedTitles.length === 0 && !searchQuery.value.trim()) {
 		try {
 			const response = await fetch('/api/images')
 			if (response.ok) images.value = await response.json()
@@ -46,7 +47,10 @@ const fetchImages = async () => {
 		const response = await fetch('/api/images/filtered', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(tagPayload),
+			body: JSON.stringify({
+				tags: tagPayload,
+				title: searchQuery.value.trim(),
+			}),
 		})
 		if (response.ok) images.value = await response.json()
 	} catch (error) {
@@ -64,6 +68,7 @@ const fetchCategories = async () => {
 }
 
 const resetFilters = () => {
+	searchQuery.value = ''
 	Object.keys(selectedFilters).forEach((key) => {
 		selectedFilters[key] = []
 	})
@@ -80,6 +85,10 @@ function openImage(id: number) {
 	isImageViewOpen.value = true
 }
 
+watch(searchQuery, () => {
+	fetchImages()
+})
+
 onMounted(() => {
 	fetchImages()
 	fetchCategories()
@@ -89,7 +98,7 @@ onMounted(() => {
 <template>
 	<main>
 		<div class="header">
-			<IconInput class="search" placeholder="Search all images...">
+			<IconInput class="search" placeholder="Search all images..." v-model="searchQuery">
 				<template #icon><SearchIcon></SearchIcon></template>
 			</IconInput>
 			<div class="vertical-line"></div>
