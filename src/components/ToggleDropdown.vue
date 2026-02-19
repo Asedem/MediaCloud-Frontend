@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import DropdownIcon from './icons/DropdownIcon.vue'
 
 const props = defineProps<{
@@ -12,7 +12,13 @@ const emit = defineEmits<{
 }>()
 
 const isOpen = ref(false)
+const dropdownRef = ref<HTMLElement | null>(null)
+
 const toggleDropdown = () => (isOpen.value = !isOpen.value)
+
+const closeDropdown = () => {
+	isOpen.value = false
+}
 
 const toggleItem = (item: string) => {
 	const current = [...(props.modelValue || [])]
@@ -27,10 +33,32 @@ const toggleItem = (item: string) => {
 }
 
 const isSelected = (item: string) => props.modelValue?.includes(item) || false
+
+const handleClickOutside = (event: MouseEvent) => {
+	if (dropdownRef.value && !dropdownRef.value.contains(event.target as Node)) {
+		closeDropdown()
+	}
+}
+
+const handleEscKey = (event: KeyboardEvent) => {
+	if (event.key === 'Escape') {
+		closeDropdown()
+	}
+}
+
+onMounted(() => {
+	document.addEventListener('click', handleClickOutside)
+	document.addEventListener('keydown', handleEscKey)
+})
+
+onUnmounted(() => {
+	document.removeEventListener('click', handleClickOutside)
+	document.removeEventListener('keydown', handleEscKey)
+})
 </script>
 
 <template>
-	<div id="dropdown-container">
+	<div id="dropdown-container" ref="dropdownRef">
 		<div id="field" @click="toggleDropdown" :class="{ active: isOpen }">
 			<div id="side">
 				<slot name="text">Select Items</slot>
