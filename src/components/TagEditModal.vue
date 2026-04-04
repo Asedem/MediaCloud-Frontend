@@ -121,7 +121,11 @@ const updateTag = async () => {
 					<SubtleButton @click="emit('close')" class="btn-secondary">
 						<template #text>Cancel</template>
 					</SubtleButton>
-					<GradientButton @click="updateTag" :disabled="!title || !selectedCategoryId" class="btn-primary">
+					<GradientButton
+						@click="updateTag"
+						:disabled="!title || !selectedCategoryId"
+						class="btn-primary"
+					>
 						<template #text>Update Tag</template>
 					</GradientButton>
 				</div>

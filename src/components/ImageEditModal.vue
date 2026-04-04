@@ -7,9 +7,9 @@ import TagDisplay from './TagDisplay.vue'
 import type { TagCategory } from '@/models/tag'
 import type { Image } from '@/models/image'
 
-const props = defineProps<{ 
-    isOpen: boolean;
-    image: Image | null;
+const props = defineProps<{
+	isOpen: boolean
+	image: Image | null
 }>()
 const emit = defineEmits(['close', 'updated'])
 
@@ -40,8 +40,8 @@ watch(
 	(newVal) => {
 		if (newVal && props.image) {
 			title.value = props.image.title
-			selectedTagIds.value = props.image.tags ? props.image.tags.map(t => t.id) : []
-            fetchData()
+			selectedTagIds.value = props.image.tags ? props.image.tags.map((t) => t.id) : []
+			fetchData()
 		}
 	},
 )
@@ -50,16 +50,16 @@ const updateImage = async () => {
 	if (!title.value || !props.image) return
 
 	try {
-        const response = await fetch(`/api/images/${props.image.id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                title: title.value,
-                tagIds: selectedTagIds.value
-            }),
-        })
+		const response = await fetch(`/api/images/${props.image.id}`, {
+			method: 'PUT',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				title: title.value,
+				tagIds: selectedTagIds.value,
+			}),
+		})
 
-        if (!response.ok) throw new Error('Update failed')
+		if (!response.ok) throw new Error('Update failed')
 
 		emit('updated')
 		emit('close')
@@ -90,7 +90,12 @@ onMounted(fetchData)
 				<div class="edit-grid">
 					<div class="left-side">
 						<div class="image-preview-container">
-							<img v-if="image" :src="`/api/images/${image.id}/preview`" alt="Preview" class="image-preview" />
+							<img
+								v-if="image"
+								:src="`/api/images/${image.id}/preview`"
+								alt="Preview"
+								class="image-preview"
+							/>
 						</div>
 					</div>
 
@@ -121,11 +126,7 @@ onMounted(fetchData)
 					<SubtleButton @click="emit('close')" class="btn-secondary">
 						<template #text>Cancel</template>
 					</SubtleButton>
-					<GradientButton
-						@click="updateImage"
-						:disabled="!title"
-						class="btn-primary"
-					>
+					<GradientButton @click="updateImage" :disabled="!title" class="btn-primary">
 						<template #text>Save Changes</template>
 					</GradientButton>
 				</div>
@@ -217,7 +218,7 @@ hr {
 	gap: 16px;
 	max-height: 400px;
 	overflow-y: auto;
-    padding-right: 8px;
+	padding-right: 8px;
 }
 
 .category-label {
