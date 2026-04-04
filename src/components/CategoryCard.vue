@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Tag, TagCategory } from '@/models/tag'
+import type { TagCategory } from '@/models/tag'
 import TagDisplay from './TagDisplay.vue'
 import ContrastButton from './ContrastButton.vue'
 import SubtleButton from './SubtleButton.vue'
