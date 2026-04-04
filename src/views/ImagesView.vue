@@ -4,6 +4,7 @@ import GradientButton from '@/components/GradientButton.vue'
 import IconInput from '@/components/IconInput.vue'
 import ImageUploadModal from '@/components/ImageUploadModal.vue'
 import ImageViewModal from '@/components/ImageViewModal.vue'
+import ImageEditModal from '@/components/ImageEditModal.vue'
 import SearchIcon from '@/components/icons/SearchIcon.vue'
 import ImageCard from '@/components/ImageCard.vue'
 import type { Image } from '@/models/image'
@@ -14,7 +15,9 @@ const images = ref<Image[]>([])
 const categories = ref<TagCategory[]>([])
 const isModalOpen = ref(false)
 const isImageViewOpen = ref(false)
+const isImageEditOpen = ref(false)
 const imageViewId = ref(-1)
+const selectedImage = ref<Image | null>(null)
 const searchQuery = ref('')
 
 const selectedFilters = reactive<Record<string, string[]>>({})
@@ -85,6 +88,11 @@ function openImage(id: number) {
 	isImageViewOpen.value = true
 }
 
+function editImage(image: Image) {
+	selectedImage.value = image
+	isImageEditOpen.value = true
+}
+
 watch(searchQuery, () => {
 	fetchImages()
 })
@@ -127,6 +135,13 @@ onMounted(() => {
 
 		<ImageViewModal :id="imageViewId" :isOpen="isImageViewOpen" @close="isImageViewOpen = false" />
 
+		<ImageEditModal
+			:image="selectedImage"
+			:isOpen="isImageEditOpen"
+			@close="isImageEditOpen = false"
+			@updated="fetchImages"
+		/>
+
 		<div class="gallery">
 			<ImageCard
 				v-for="img in images"
@@ -136,6 +151,7 @@ onMounted(() => {
 				:tags="img.tags"
 				@open="openImage(img.id)"
 				@delete="deleteImage(img.id)"
+				@edit="editImage(img)"
 			></ImageCard>
 		</div>
 	</main>

@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import type { TagCategory } from '@/models/tag'
+import type { Tag, TagCategory } from '@/models/tag'
 import TagDisplay from './TagDisplay.vue'
 import ContrastButton from './ContrastButton.vue'
-import GradientButton from './GradientButton.vue'
+import SubtleButton from './SubtleButton.vue'
 
 defineProps<{ category: TagCategory }>()
-const emit = defineEmits(['edit', 'delete', 'add'])
+const emit = defineEmits(['edit', 'delete', 'add', 'edit-tag'])
 </script>
 
 <template>
@@ -13,17 +13,23 @@ const emit = defineEmits(['edit', 'delete', 'add'])
 		<div class="card-body">
 			<h1 class="card-title">{{ category.title }}</h1>
 			<div class="tag-row">
-				<TagDisplay v-for="tag in category.tags" :key="tag.id" :color="tag.color">
+				<TagDisplay
+					v-for="tag in category.tags"
+					:key="tag.id"
+					:color="tag.color"
+					class="clickable-tag"
+					@click="emit('edit-tag', tag, category.id)"
+				>
 					<template #text>{{ tag.title }}</template>
 				</TagDisplay>
 			</div>
 			<br />
-			<ContrastButton>
-				<template #text>Edit</template>
-			</ContrastButton>
-			<GradientButton class="space">
+			<ContrastButton @click="emit('add', category.id)">
 				<template #text>Add Tag</template>
-			</GradientButton>
+			</ContrastButton>
+			<SubtleButton class="space" @click="emit('edit', category)">
+				<template #text>Edit</template>
+			</SubtleButton>
 		</div>
 	</div>
 </template>
@@ -56,6 +62,15 @@ const emit = defineEmits(['edit', 'delete', 'add'])
 	flex-wrap: wrap;
 	gap: 8px 12px;
 	align-items: center;
+}
+
+.clickable-tag {
+	cursor: pointer;
+	transition: opacity 0.2s;
+}
+
+.clickable-tag:hover {
+	opacity: 0.8;
 }
 
 .space {

@@ -24,29 +24,29 @@ import TagIconFilled from './components/icons/TagIconFilled.vue'
 		</div>
 		<div class="navigation">
 			<SidebarButton route="/" class="sidebar-button">
-				<template #icon><HomeIcon></HomeIcon></template>
-				<template #icon-active><HomeIconFilled></HomeIconFilled></template>
+				<template #icon><HomeIcon /></template>
+				<template #icon-active><HomeIconFilled /></template>
 				<template #text>Home</template>
 			</SidebarButton>
 			<SidebarButton route="/images" class="sidebar-button">
-				<template #icon><ImageIcon></ImageIcon></template>
-				<template #icon-active><ImageIconFilled></ImageIconFilled></template>
+				<template #icon><ImageIcon /></template>
+				<template #icon-active><ImageIconFilled /></template>
 				<template #text>Images</template>
 			</SidebarButton>
 			<SidebarButton route="/videos" class="sidebar-button">
-				<template #icon><VideoIcon></VideoIcon></template>
-				<template #icon-active><VideoIconFilled></VideoIconFilled></template>
+				<template #icon><VideoIcon /></template>
+				<template #icon-active><VideoIconFilled /></template>
 				<template #text>Videos</template>
 			</SidebarButton>
 			<SidebarButton route="/categories" class="sidebar-button">
-				<template #icon><TagIcon></TagIcon></template>
-				<template #icon-active><TagIconFilled></TagIconFilled></template>
+				<template #icon><TagIcon /></template>
+				<template #icon-active><TagIconFilled /></template>
 				<template #text>Categories</template>
 			</SidebarButton>
 			<SidebarButton route="/components" class="sidebar-button">
-				<template #icon><ComponentIcon></ComponentIcon></template>
-				<template #icon-active><ComponentIconFilled></ComponentIconFilled></template>
-				<template #text>Componenets</template>
+				<template #icon><ComponentIcon /></template>
+				<template #icon-active><ComponentIconFilled /></template>
+				<template #text>Components</template>
 			</SidebarButton>
 		</div>
 	</div>
@@ -54,49 +54,56 @@ import TagIconFilled from './components/icons/TagIconFilled.vue'
 </template>
 
 <style>
+/* Base Mobile Layout (Mobile First) */
 #app {
-	display: grid;
-	grid-template-columns: 16rem 1fr;
-	grid-template-rows: 1fr;
-	grid-column-gap: 0px;
-	grid-row-gap: 0px;
+	display: flex;
+	flex-direction: column;
 	height: 100dvh;
 	overflow: hidden;
 }
 
-.sidebar {
-	grid-area: 1 / 1 / 2 / 2;
-	height: 100%;
-	border-right: 1px solid var(--color-border);
-	overflow-y: hidden;
+.body {
+	flex: 1;
+	overflow-y: auto;
+	order: 1; /* Content stays on top */
 }
 
-.body {
-	grid-area: 1 / 2 / 2 / 3;
-	height: 100%;
-	overflow-y: auto;
+.sidebar {
+	order: 2; /* Sidebar moves to bottom */
+	border-top: 1px solid var(--color-border);
+	background: var(--color-background);
+	z-index: 10;
+}
+
+/* Desktop Layout Overrides */
+@media (min-width: 768px) {
+	#app {
+		display: grid;
+		grid-template-columns: 16rem 1fr;
+		flex-direction: row;
+	}
+
+	.sidebar {
+		order: 0;
+		border-top: none;
+		border-right: 1px solid var(--color-border);
+	}
 }
 </style>
 
 <style scoped>
-.navigation {
-	display: flex;
-	flex-direction: column;
-	margin-top: 30px;
-}
-
-.sidebar .sidebar-button {
-	width: 80%;
-	margin-top: 5px;
-	margin-left: auto;
-	margin-right: auto;
-}
-
+/* Profile: Hidden on mobile to save space, shown on desktop */
 .profile {
-	display: flex;
-	align-items: center;
-	margin-top: 30px;
-	margin-left: 30px;
+	display: none;
+}
+
+@media (min-width: 768px) {
+	.profile {
+		display: flex;
+		align-items: center;
+		margin-top: 30px;
+		margin-left: 30px;
+	}
 }
 
 .profile img {
@@ -107,10 +114,37 @@ import TagIconFilled from './components/icons/TagIconFilled.vue'
 	margin-right: 0.5em;
 }
 
+/* Navigation: Horizontal on mobile, Vertical on desktop */
+.navigation {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-around;
+	padding: 10px 0;
+}
+
+@media (min-width: 768px) {
+	.navigation {
+		flex-direction: column;
+		justify-content: flex-start;
+		margin-top: 30px;
+	}
+}
+
+.sidebar-button {
+	margin: 0;
+	width: auto;
+}
+
+@media (min-width: 768px) {
+	.sidebar .sidebar-button {
+		width: 80%;
+		margin: 5px auto 0 auto;
+	}
+}
+
 .name {
 	color: var(--color-text);
 }
-
 .plan {
 	font-size: 0.7em;
 }
