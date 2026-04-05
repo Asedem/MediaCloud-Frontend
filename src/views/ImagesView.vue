@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, reactive, watch } from 'vue'
+import { ref, onMounted, reactive, watch, nextTick } from 'vue'
 import GradientButton from '@/components/GradientButton.vue'
 import IconInput from '@/components/IconInput.vue'
 import ImageUploadModal from '@/components/ImageUploadModal.vue'
@@ -14,6 +14,7 @@ import type { StaticTagDefinition } from '@/models/staticTag'
 import ToggleDropdown from '@/components/ToggleDropdown.vue'
 import RangeDropdown from '@/components/RangeDropdown.vue'
 import IconToggle from '@/components/IconToggle.vue'
+import SingleSelectDropdown from '@/components/SingleSelectDropdown.vue'
 import BookmarkIcon from '@/components/icons/BookmarkIcon.vue'
 import BookmarksIcon from '@/components/icons/BookmarksIcon.vue'
 
@@ -28,6 +29,13 @@ const selectedImage = ref<Image | null>(null)
 const searchQuery = ref('')
 const isExact = ref(false)
 
+// Pagination & Sorting state
+const currentPage = ref(0)
+const pageSize = ref(24)
+const hasMore = ref(true)
+const isLoading = ref(false)
+const sortValue = ref('random') // Default sort is now random
+
 const confirmation = reactive({
 	isOpen: false,
 	title: '',
@@ -38,20 +46,40 @@ const confirmation = reactive({
 const selectedFilters = reactive<Record<string, string[]>>({})
 const staticFilters = reactive<Record<number, { min: number | null; max: number | null }>>({})
 
-const fetchImages = async () => {
-	const allSelectedTitles = Object.values(selectedFilters).flat()
-	const hasStaticFilters = Object.values(staticFilters).some((f) => f.min !== null || f.max !== null)
+const sortOptions = ref<{ label: string; value: string }[]>([
+	{ label: 'Random', value: 'random' },
+	{ label: 'Newest First', value: 'default' },
+	{ label: 'Title (A-Z)', value: 'title:asc' },
+	{ label: 'Title (Z-A)', value: 'title:desc' },
+])
 
-	if (allSelectedTitles.length === 0 && !searchQuery.value.trim() && !hasStaticFilters) {
-		try {
-			const response = await fetch('/api/images')
-			if (response.ok) images.value = await response.json()
-		} catch (error) {
-			console.error(error)
-		}
-		return
+const updateSortOptions = () => {
+	const base = [
+		{ label: 'Random', value: 'random' },
+		{ label: 'Newest First', value: 'default' },
+		{ label: 'Title (A-Z)', value: 'title:asc' },
+		{ label: 'Title (Z-A)', value: 'title:desc' },
+	]
+
+	staticDefinitions.value.forEach((def) => {
+		base.push({ label: `${def.title} (Low to High)`, value: `static_${def.id}:asc` })
+		base.push({ label: `${def.title} (High to Low)`, value: `static_${def.id}:desc` })
+	})
+
+	sortOptions.value = base
+}
+
+const fetchImages = async (append = false) => {
+	if (isLoading.value) return
+	isLoading.value = true
+
+	if (!append) {
+		currentPage.value = 0
+		hasMore.value = true
 	}
 
+	const allSelectedTitles = Object.values(selectedFilters).flat()
+	
 	const tagPayload: Tag[] = []
 	allSelectedTitles.forEach((title) => {
 		for (const category of categories.value) {
@@ -70,6 +98,17 @@ const fetchImages = async () => {
 		}
 	})
 
+	let sortBy = 'id'
+	let sortDirection = 'desc'
+
+	if (sortValue.value === 'random') {
+		sortBy = 'random'
+	} else if (sortValue.value !== 'default') {
+		const [s, d] = sortValue.value.split(':')
+		sortBy = s
+		sortDirection = d
+	}
+
 	try {
 		const response = await fetch('/api/images/filtered', {
 			method: 'POST',
@@ -79,11 +118,29 @@ const fetchImages = async () => {
 				title: searchQuery.value.trim(),
 				filterMode: isExact.value ? 'exact' : 'inclusive',
 				staticTagFilters: staticFilterPayload,
+				page: currentPage.value,
+				size: pageSize.value,
+				sortBy,
+				sortDirection,
 			}),
 		})
-		if (response.ok) images.value = await response.json()
+
+		if (response.ok) {
+			const data: Image[] = await response.json()
+			if (append) {
+				images.value = [...images.value, ...data]
+			} else {
+				images.value = data
+			}
+
+			if (data.length < pageSize.value) {
+				hasMore.value = false
+			}
+		}
 	} catch (error) {
 		console.error(error)
+	} finally {
+		isLoading.value = false
 	}
 }
 
@@ -102,6 +159,7 @@ const fetchData = async () => {
 					staticFilters[def.id] = { min: null, max: null }
 				}
 			})
+			updateSortOptions()
 		}
 	} catch (error) {
 		console.error(error)
@@ -111,6 +169,7 @@ const fetchData = async () => {
 const resetFilters = () => {
 	searchQuery.value = ''
 	isExact.value = false
+	sortValue.value = 'random' // Reset to random
 	Object.keys(selectedFilters).forEach((key) => {
 		selectedFilters[key] = []
 	})
@@ -147,14 +206,28 @@ function editImage(image: Image) {
 	isImageEditOpen.value = true
 }
 
-watch(searchQuery, () => {
-	fetchImages()
-})
+// Lazy loading observer
+const loadMoreSentinel = ref<HTMLElement | null>(null)
+let observer: IntersectionObserver | null = null
 
-watch(isExact, () => {
-	fetchImages()
-})
+const setupObserver = () => {
+	if (observer) observer.disconnect()
 
+	observer = new IntersectionObserver((entries) => {
+		if (entries[0].isIntersecting && hasMore.value && !isLoading.value) {
+			currentPage.value++
+			fetchImages(true)
+		}
+	}, { threshold: 0.1 })
+
+	if (loadMoreSentinel.value) {
+		observer.observe(loadMoreSentinel.value)
+	}
+}
+
+watch(searchQuery, () => fetchImages())
+watch(isExact, () => fetchImages())
+watch(sortValue, () => fetchImages())
 watch(
 	staticFilters,
 	() => {
@@ -163,9 +236,10 @@ watch(
 	{ deep: true },
 )
 
-onMounted(() => {
-	fetchImages()
-	fetchData()
+onMounted(async () => {
+	await fetchData()
+	await fetchImages()
+	nextTick(setupObserver)
 })
 </script>
 
@@ -185,6 +259,10 @@ onMounted(() => {
 			<GradientButton class="all" @click="resetFilters">
 				<template #text>Show all Media</template>
 			</GradientButton>
+
+			<div class="vertical-line"></div>
+
+			<SingleSelectDropdown :options="sortOptions" v-model="sortValue" class="drop" />
 
 			<div class="vertical-line"></div>
 
@@ -212,13 +290,13 @@ onMounted(() => {
 				:key="category.title"
 				:items="category.tags.map((tag) => tag.title)"
 				v-model="selectedFilters[category.title]"
-				@update:modelValue="fetchImages"
+				@update:modelValue="fetchImages()"
 			>
 				<template #text>{{ category.title }}</template>
 			</ToggleDropdown>
 		</div>
 
-		<ImageUploadModal :isOpen="isModalOpen" @close="isModalOpen = false" @uploaded="fetchImages" />
+		<ImageUploadModal :isOpen="isModalOpen" @close="isModalOpen = false" @uploaded="fetchImages()" />
 
 		<ImageViewModal :id="imageViewId" :isOpen="isImageViewOpen" @close="isImageViewOpen = false" />
 
@@ -226,7 +304,7 @@ onMounted(() => {
 			:image="selectedImage"
 			:isOpen="isImageEditOpen"
 			@close="isImageEditOpen = false"
-			@updated="fetchImages"
+			@updated="fetchImages()"
 		/>
 
 		<ConfirmationModal
@@ -249,6 +327,10 @@ onMounted(() => {
 				@delete="deleteImage(img)"
 				@edit="editImage(img)"
 			></ImageCard>
+		</div>
+
+		<div ref="loadMoreSentinel" class="sentinel">
+			<p v-if="isLoading">Loading more...</p>
 		</div>
 	</main>
 </template>
@@ -299,33 +381,40 @@ main {
 
 .gallery {
 	padding: 2rem;
-	column-count: 4;
-	column-gap: 1.6rem;
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 1.6rem;
 	width: 100%;
 }
 
 .gallery > * {
-	break-inside: avoid;
-	margin-bottom: 1.6rem;
-	display: inline-block;
 	width: 100%;
+}
+
+.sentinel {
+	width: 100%;
+	height: 100px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	color: var(--color-subtext);
 }
 
 @media (max-width: 1400px) {
 	.gallery {
-		column-count: 3;
+		grid-template-columns: repeat(3, 1fr);
 	}
 }
 
 @media (max-width: 1000px) {
 	.gallery {
-		column-count: 2;
+		grid-template-columns: repeat(2, 1fr);
 	}
 }
 
 @media (max-width: 700px) {
 	.gallery {
-		column-count: 1;
+		grid-template-columns: repeat(1, 1fr);
 	}
 }
 </style>
