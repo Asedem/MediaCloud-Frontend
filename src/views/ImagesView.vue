@@ -5,6 +5,7 @@ import IconInput from '@/components/IconInput.vue'
 import ImageUploadModal from '@/components/ImageUploadModal.vue'
 import ImageViewModal from '@/components/ImageViewModal.vue'
 import ImageEditModal from '@/components/ImageEditModal.vue'
+import ConfirmationModal from '@/components/ConfirmationModal.vue'
 import SearchIcon from '@/components/icons/SearchIcon.vue'
 import ImageCard from '@/components/ImageCard.vue'
 import type { Image } from '@/models/image'
@@ -26,6 +27,13 @@ const imageViewId = ref(-1)
 const selectedImage = ref<Image | null>(null)
 const searchQuery = ref('')
 const isExact = ref(false)
+
+const confirmation = reactive({
+	isOpen: false,
+	title: '',
+	message: '',
+	onConfirm: () => {},
+})
 
 const selectedFilters = reactive<Record<string, string[]>>({})
 const staticFilters = reactive<Record<number, { min: number | null; max: number | null }>>({})
@@ -112,9 +120,21 @@ const resetFilters = () => {
 	fetchImages()
 }
 
-const deleteImage = async (id: number) => {
-	await fetch(`/api/images/${id}`, { method: 'DELETE' })
-	fetchImages()
+const deleteImage = (image: Image) => {
+	confirmation.title = 'Delete Image'
+	confirmation.message = `Are you sure you want to permanently delete "${image.title}"? This action cannot be undone.`
+	confirmation.onConfirm = async () => {
+		try {
+			const response = await fetch(`/api/images/${image.id}`, { method: 'DELETE' })
+			if (response.ok) {
+				fetchImages()
+			}
+		} catch (error) {
+			console.error('Error deleting image:', error)
+		}
+		confirmation.isOpen = false
+	}
+	confirmation.isOpen = true
 }
 
 function openImage(id: number) {
@@ -135,9 +155,13 @@ watch(isExact, () => {
 	fetchImages()
 })
 
-watch(staticFilters, () => {
-	fetchImages()
-}, { deep: true })
+watch(
+	staticFilters,
+	() => {
+		fetchImages()
+	},
+	{ deep: true },
+)
 
 onMounted(() => {
 	fetchImages()
@@ -205,6 +229,14 @@ onMounted(() => {
 			@updated="fetchImages"
 		/>
 
+		<ConfirmationModal
+			:isOpen="confirmation.isOpen"
+			:title="confirmation.title"
+			:message="confirmation.message"
+			@close="confirmation.isOpen = false"
+			@confirm="confirmation.onConfirm"
+		/>
+
 		<div class="gallery">
 			<ImageCard
 				v-for="img in images"
@@ -214,7 +246,7 @@ onMounted(() => {
 				:tags="img.tags"
 				:static-tag-values="img.staticTagValues"
 				@open="openImage(img.id)"
-				@delete="deleteImage(img.id)"
+				@delete="deleteImage(img)"
 				@edit="editImage(img)"
 			></ImageCard>
 		</div>

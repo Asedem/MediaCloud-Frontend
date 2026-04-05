@@ -19,8 +19,10 @@ import SubtleButton from '@/components/SubtleButton.vue'
 import TagDisplay from '@/components/TagDisplay.vue'
 import TextToggle from '@/components/TextToggle.vue'
 import ToggleDropdown from '@/components/ToggleDropdown.vue'
+import ConfirmationModal from '@/components/ConfirmationModal.vue'
 
 const demoNumber = ref(42)
+const isConfirmOpen = ref(false)
 </script>
 
 <template>
@@ -78,6 +80,19 @@ const demoNumber = ref(42)
 			<p style="font-size: 0.8em; margin-top: 5px">Value: {{ demoNumber }}</p>
 		</div>
 
+		<h2>Confirmation Modal</h2>
+		<p>Custom dialogue for confirming destructive actions</p>
+		<ContrastButton @click="isConfirmOpen = true">
+			<template #text>Show Demo Modal</template>
+		</ContrastButton>
+		<ConfirmationModal
+			:isOpen="isConfirmOpen"
+			title="Confirm Action"
+			message="This is a custom confirmation dialogue. Are you sure you want to proceed?"
+			@close="isConfirmOpen = false"
+			@confirm="isConfirmOpen = false"
+		/>
+
 		<h2>Icon Input</h2>
 		<p>Text input component with an icon up front</p>
 		<IconInput placeholder="Serach for anything...">
@@ -92,7 +107,7 @@ const demoNumber = ref(42)
 
 		<h2>Icon Toggle</h2>
 		<p>A Toggle, that can toggle between 2 stated, indecated by icons</p>
-		<IconToggle>
+		<IconToggle :modelValue="false">
 			<template #icon-left><BookmarkIcon></BookmarkIcon></template>
 			<template #icon-right><BookmarksIcon></BookmarksIcon></template>
 		</IconToggle>

@@ -11,7 +11,7 @@ const props = defineProps<{
 	currentCategoryId: number | null
 	categories: TagCategory[]
 }>()
-const emit = defineEmits(['close', 'updated'])
+const emit = defineEmits(['close', 'updated', 'delete'])
 
 const title = ref<string>('')
 const description = ref<string>('')
@@ -74,6 +74,7 @@ const updateTag = async () => {
 					<h2>Edit Tag</h2>
 					<p>Update tag details</p>
 				</div>
+				<button class="delete-btn" @click="emit('delete', tag)">Delete Tag</button>
 			</div>
 
 			<hr />
@@ -166,6 +167,23 @@ const updateTag = async () => {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
+}
+
+.delete-btn {
+	background: rgba(231, 76, 60, 0.1);
+	color: #e74c3c;
+	border: 1px solid rgba(231, 76, 60, 0.2);
+	padding: 6px 12px;
+	border-radius: 8px;
+	font-size: 0.8em;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.delete-btn:hover {
+	background: #e74c3c;
+	color: white;
 }
 
 hr {

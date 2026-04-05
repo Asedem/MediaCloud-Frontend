@@ -10,7 +10,7 @@ const props = defineProps<{
 	definition: StaticTagDefinition | null
 }>()
 
-const emit = defineEmits(['close', 'saved'])
+const emit = defineEmits(['close', 'saved', 'delete'])
 
 const title = ref('')
 const description = ref('')
@@ -61,8 +61,15 @@ const saveDefinition = async () => {
 <template>
 	<div v-if="isOpen" class="modal-overlay" @click.self="emit('close')">
 		<div class="modal-content">
-			<h2>{{ definition ? 'Edit Static Tag' : 'Create Static Tag' }}</h2>
-			<p>Every image will store a unique value for this tag.</p>
+			<div class="header">
+				<div>
+					<h2>{{ definition ? 'Edit Static Tag' : 'Create Static Tag' }}</h2>
+					<p>Every image will store a unique value for this tag.</p>
+				</div>
+				<button v-if="definition" class="delete-btn" @click="emit('delete', definition)">
+					Delete
+				</button>
+			</div>
 			<br />
 			<SimpleInput v-model="title" placeholder="Tag Title" />
 			<br />
@@ -103,13 +110,40 @@ const saveDefinition = async () => {
 	max-width: 90vw;
 }
 
+.header {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 12px;
+}
+
+.delete-btn {
+	background: rgba(231, 76, 60, 0.1);
+	color: #e74c3c;
+	border: 1px solid rgba(231, 76, 60, 0.2);
+	padding: 6px 12px;
+	border-radius: 8px;
+	font-size: 0.8em;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.2s;
+	flex-shrink: 0;
+}
+
+.delete-btn:hover {
+	background: #e74c3c;
+	color: white;
+}
+
 h2 {
-	margin-bottom: 0.5rem;
+	margin-bottom: 0.2rem;
+	font-size: 1.2rem;
 }
 
 p {
 	color: var(--color-subtext);
-	font-size: 0.9em;
+	font-size: 0.85em;
+	line-height: 1.3;
 }
 
 .actions {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, reactive } from 'vue'
 import GradientButton from '@/components/GradientButton.vue'
 import IconInput from '@/components/IconInput.vue'
 import SearchIcon from '@/components/icons/SearchIcon.vue'
@@ -9,6 +9,7 @@ import CategoryCreateModal from '@/components/CategoryCreateModal.vue'
 import CategoryEditModal from '@/components/CategoryEditModal.vue'
 import TagAddModal from '@/components/TagAddModal.vue'
 import TagEditModal from '@/components/TagEditModal.vue'
+import ConfirmationModal from '@/components/ConfirmationModal.vue'
 import type { Tag } from '@/models/tag'
 import type { StaticTagDefinition } from '@/models/staticTag'
 import StaticTagCategoryCard from '@/components/StaticTagCategoryCard.vue'
@@ -21,6 +22,13 @@ const isCategoryEditModalOpen = ref(false)
 const isTagModalOpen = ref(false)
 const isTagEditModalOpen = ref(false)
 const isStaticModalOpen = ref(false)
+
+const confirmation = reactive({
+	isOpen: false,
+	title: '',
+	message: '',
+	onConfirm: () => {},
+})
 
 const selectedCategory = ref<TagCategory | null>(null)
 const selectedCategoryId = ref<number | null>(null)
@@ -97,6 +105,60 @@ const openStaticEditModal = (def: StaticTagDefinition) => {
 	isStaticModalOpen.value = true
 }
 
+const deleteTag = (tag: Tag) => {
+	confirmation.title = 'Delete Tag'
+	confirmation.message = `Are you sure you want to delete the tag "${tag.title}"? This will remove it from all images.`
+	confirmation.onConfirm = async () => {
+		try {
+			const response = await fetch(`/api/tags/${tag.id}`, { method: 'DELETE' })
+			if (response.ok) {
+				fetchData()
+				isTagEditModalOpen.value = false
+			}
+		} catch (error) {
+			console.error(error)
+		}
+		confirmation.isOpen = false
+	}
+	confirmation.isOpen = true
+}
+
+const deleteStaticTag = (def: StaticTagDefinition) => {
+	confirmation.title = 'Delete Static Tag'
+	confirmation.message = `Are you sure you want to delete the static tag "${def.title}"? This will permanently delete all values associated with it across all images.`
+	confirmation.onConfirm = async () => {
+		try {
+			const response = await fetch(`/api/static-tags/definitions/${def.id}`, { method: 'DELETE' })
+			if (response.ok) {
+				fetchData()
+				isStaticModalOpen.value = false
+			}
+		} catch (error) {
+			console.error(error)
+		}
+		confirmation.isOpen = false
+	}
+	confirmation.isOpen = true
+}
+
+const deleteCategory = (category: TagCategory) => {
+	confirmation.title = 'Delete Category'
+	confirmation.message = `Are you sure you want to delete the category "${category.title}" and all its tags?`
+	confirmation.onConfirm = async () => {
+		try {
+			const response = await fetch(`/api/tags/categories/${category.id}`, { method: 'DELETE' })
+			if (response.ok) {
+				fetchData()
+				isCategoryEditModalOpen.value = false
+			}
+		} catch (error) {
+			console.error(error)
+		}
+		confirmation.isOpen = false
+	}
+	confirmation.isOpen = true
+}
+
 onMounted(() => {
 	fetchData()
 })
@@ -160,6 +222,7 @@ onMounted(() => {
 			:category="selectedCategory"
 			@close="isCategoryEditModalOpen = false"
 			@updated="fetchData"
+			@delete="deleteCategory"
 		/>
 
 		<TagAddModal
@@ -177,6 +240,7 @@ onMounted(() => {
 			:categories="categories"
 			@close="isTagEditModalOpen = false"
 			@updated="fetchData"
+			@delete="deleteTag"
 		/>
 
 		<StaticTagDefinitionModal
@@ -184,6 +248,15 @@ onMounted(() => {
 			:definition="selectedStaticDefinition"
 			@close="isStaticModalOpen = false"
 			@saved="fetchData"
+			@delete="deleteStaticTag"
+		/>
+
+		<ConfirmationModal
+			:isOpen="confirmation.isOpen"
+			:title="confirmation.title"
+			:message="confirmation.message"
+			@close="confirmation.isOpen = false"
+			@confirm="confirmation.onConfirm"
 		/>
 	</main>
 </template>

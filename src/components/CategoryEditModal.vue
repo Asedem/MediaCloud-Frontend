@@ -1,17 +1,18 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import type { TagCategory } from '@/models/tag'
 import SubtleButton from './SubtleButton.vue'
 import GradientButton from './GradientButton.vue'
 import SimpleInput from './SimpleInput.vue'
-import type { TagCategory } from '@/models/tag'
 
 const props = defineProps<{
 	isOpen: boolean
 	category: TagCategory | null
 }>()
-const emit = defineEmits(['close', 'updated'])
 
-const title = ref<string>('')
+const emit = defineEmits(['close', 'updated', 'delete'])
+
+const title = ref('')
 
 watch(
 	() => props.isOpen,
@@ -25,18 +26,17 @@ watch(
 const updateCategory = async () => {
 	if (!title.value || !props.category) return
 
+	const params = new URLSearchParams({ title: title.value })
+
 	try {
-		const response = await fetch(
-			`/api/tags/categories/${props.category.id}?title=${encodeURIComponent(title.value)}`,
-			{
-				method: 'PUT',
-			},
-		)
+		const response = await fetch(`/api/tags/categories/${props.category.id}?${params.toString()}`, {
+			method: 'PUT',
+		})
 
-		if (!response.ok) throw new Error('Failed to update category')
-
-		emit('updated')
-		emit('close')
+		if (response.ok) {
+			emit('updated')
+			emit('close')
+		}
 	} catch (error) {
 		console.error('Failed to update category:', error)
 	}
@@ -49,23 +49,22 @@ const updateCategory = async () => {
 			<div class="header">
 				<div>
 					<h2>Edit Category</h2>
-					<p>Change the title of your category</p>
+					<p>Change the name of this tag category.</p>
 				</div>
+				<button v-if="category" class="delete-btn" @click="emit('delete', category)">
+					Delete
+				</button>
 			</div>
+			<br />
+			<SimpleInput v-model="title" placeholder="Category Title" />
 
-			<hr />
-
-			<div class="form-container">
-				<SimpleInput v-model="title" placeholder="Enter category title" />
-
-				<div class="actions">
-					<SubtleButton @click="emit('close')" class="btn-secondary">
-						<template #text>Cancel</template>
-					</SubtleButton>
-					<GradientButton @click="updateCategory" :disabled="!title" class="btn-primary">
-						<template #text>Update Category</template>
-					</GradientButton>
-				</div>
+			<div class="actions">
+				<SubtleButton @click="emit('close')">
+					<template #text>Cancel</template>
+				</SubtleButton>
+				<GradientButton @click="updateCategory" :disabled="!title">
+					<template #text>Save Changes</template>
+				</GradientButton>
 			</div>
 		</div>
 	</div>
@@ -84,42 +83,54 @@ const updateCategory = async () => {
 	justify-content: center;
 	align-items: center;
 	z-index: 1000;
-	padding: 20px;
 }
 
 .modal-content {
 	background: var(--color-background);
 	padding: 2rem;
 	border-radius: 8px;
-	width: 500px;
-	max-width: 95vw;
-	max-height: 90vh;
-	overflow-y: auto;
-	display: flex;
-	flex-direction: column;
+	width: 450px;
+	max-width: 90vw;
 }
 
 .header {
 	display: flex;
 	justify-content: space-between;
-	align-items: center;
+	align-items: flex-start;
+	gap: 12px;
 }
 
-hr {
-	margin: 32px 0;
-	border: 1px solid var(--color-background-soft);
+.delete-btn {
+	background: rgba(231, 76, 60, 0.1);
+	color: #e74c3c;
+	border: 1px solid rgba(231, 76, 60, 0.2);
+	padding: 6px 12px;
+	border-radius: 8px;
+	font-size: 0.8em;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.2s;
+	flex-shrink: 0;
 }
 
-.form-container {
-	display: flex;
-	flex-direction: column;
-	gap: 20px;
+.delete-btn:hover {
+	background: #e74c3c;
+	color: white;
+}
+
+h2 {
+	margin-bottom: 0.2rem;
+}
+
+p {
+	color: var(--color-subtext);
+	font-size: 0.9em;
 }
 
 .actions {
 	display: flex;
 	justify-content: flex-end;
 	gap: 12px;
-	margin-top: 20px;
+	margin-top: 24px;
 }
 </style>
