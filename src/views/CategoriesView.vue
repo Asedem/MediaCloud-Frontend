@@ -10,22 +10,32 @@ import CategoryEditModal from '@/components/CategoryEditModal.vue'
 import TagAddModal from '@/components/TagAddModal.vue'
 import TagEditModal from '@/components/TagEditModal.vue'
 import type { Tag } from '@/models/tag'
+import type { StaticTagDefinition } from '@/models/staticTag'
+import StaticTagCategoryCard from '@/components/StaticTagCategoryCard.vue'
+import StaticTagDefinitionModal from '@/components/StaticTagDefinitionModal.vue'
 
 const categories = ref<TagCategory[]>([])
+const staticDefinitions = ref<StaticTagDefinition[]>([])
 const isCategoryModalOpen = ref(false)
 const isCategoryEditModalOpen = ref(false)
 const isTagModalOpen = ref(false)
 const isTagEditModalOpen = ref(false)
+const isStaticModalOpen = ref(false)
 
 const selectedCategory = ref<TagCategory | null>(null)
 const selectedCategoryId = ref<number | null>(null)
 const selectedTag = ref<Tag | null>(null)
+const selectedStaticDefinition = ref<StaticTagDefinition | null>(null)
 const searchQuery = ref('')
 
-const fetchCategories = async () => {
+const fetchData = async () => {
 	try {
-		const response = await fetch('/api/tags/categories')
-		if (response.ok) categories.value = await response.json()
+		const [catRes, staticRes] = await Promise.all([
+			fetch('/api/tags/categories'),
+			fetch('/api/static-tags/definitions'),
+		])
+		if (catRes.ok) categories.value = await catRes.json()
+		if (staticRes.ok) staticDefinitions.value = await staticRes.json()
 	} catch (error) {
 		console.error(error)
 	}
@@ -42,10 +52,23 @@ const filteredCategories = computed(() => {
 	)
 })
 
+const filteredStaticDefinitions = computed(() => {
+	if (!searchQuery.value.trim()) return staticDefinitions.value
+
+	const query = searchQuery.value.toLowerCase()
+	return staticDefinitions.value.filter(
+		(def) =>
+			def.title.toLowerCase().includes(query) ||
+			def.description?.toLowerCase().includes(query),
+	)
+})
+
 const totalActiveTags = computed(() => {
-	return categories.value.reduce((acc, category) => {
-		return acc + (category.tags?.length || 0)
-	}, 0)
+	return (
+		categories.value.reduce((acc, category) => {
+			return acc + (category.tags?.length || 0)
+		}, 0) + staticDefinitions.value.length
+	)
 })
 
 const openTagAddModal = (categoryId: number) => {
@@ -64,8 +87,18 @@ const openTagEditModal = (tag: Tag, categoryId: number) => {
 	isTagEditModalOpen.value = true
 }
 
+const openStaticAddModal = () => {
+	selectedStaticDefinition.value = null
+	isStaticModalOpen.value = true
+}
+
+const openStaticEditModal = (def: StaticTagDefinition) => {
+	selectedStaticDefinition.value = def
+	isStaticModalOpen.value = true
+}
+
 onMounted(() => {
-	fetchCategories()
+	fetchData()
 })
 </script>
 
@@ -88,7 +121,7 @@ onMounted(() => {
 		<div class="filter">
 			<div>
 				<p>TOTAL CATEGORIES</p>
-				<h3>{{ categories.length }}</h3>
+				<h3>{{ categories.length + 1 }}</h3>
 			</div>
 			<div class="vertical-line"></div>
 			<div>
@@ -100,6 +133,12 @@ onMounted(() => {
 		</div>
 
 		<div class="gallery">
+			<StaticTagCategoryCard
+				v-if="filteredStaticDefinitions.length > 0 || !searchQuery"
+				:definitions="filteredStaticDefinitions"
+				@add="openStaticAddModal"
+				@edit="openStaticEditModal"
+			></StaticTagCategoryCard>
 			<CategoryCard
 				v-for="category in filteredCategories"
 				:key="category.id"
@@ -113,14 +152,14 @@ onMounted(() => {
 		<CategoryCreateModal
 			:isOpen="isCategoryModalOpen"
 			@close="isCategoryModalOpen = false"
-			@created="fetchCategories"
+			@created="fetchData"
 		/>
 
 		<CategoryEditModal
 			:isOpen="isCategoryEditModalOpen"
 			:category="selectedCategory"
 			@close="isCategoryEditModalOpen = false"
-			@updated="fetchCategories"
+			@updated="fetchData"
 		/>
 
 		<TagAddModal
@@ -128,7 +167,7 @@ onMounted(() => {
 			:categoryId="selectedCategoryId"
 			:categories="categories"
 			@close="isTagModalOpen = false"
-			@created="fetchCategories"
+			@created="fetchData"
 		/>
 
 		<TagEditModal
@@ -137,7 +176,14 @@ onMounted(() => {
 			:currentCategoryId="selectedCategoryId"
 			:categories="categories"
 			@close="isTagEditModalOpen = false"
-			@updated="fetchCategories"
+			@updated="fetchData"
+		/>
+
+		<StaticTagDefinitionModal
+			:isOpen="isStaticModalOpen"
+			:definition="selectedStaticDefinition"
+			@close="isStaticModalOpen = false"
+			@saved="fetchData"
 		/>
 	</main>
 </template>

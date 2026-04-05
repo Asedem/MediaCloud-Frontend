@@ -6,6 +6,7 @@ import TextToggle from './TextToggle.vue'
 import SimpleInput from './SimpleInput.vue'
 import TagDisplay from './TagDisplay.vue'
 import type { TagCategory } from '@/models/tag'
+import type { StaticTagDefinition } from '@/models/staticTag'
 
 const props = defineProps<{ isOpen: boolean }>()
 const emit = defineEmits(['close', 'uploaded'])
@@ -19,14 +20,28 @@ const fileInput = ref<HTMLInputElement | null>(null)
 const previewUrl = ref<string | null>(null)
 
 const categories = ref<TagCategory[]>([])
+const staticDefinitions = ref<StaticTagDefinition[]>([])
 const selectedTagIds = ref<number[]>([])
+const staticValues = ref<Record<number, number>>({})
 
 const fetchData = async () => {
 	try {
-		const res = await fetch('/api/tags/categories')
-		if (res.ok) categories.value = await res.json()
+		const [catRes, staticRes] = await Promise.all([
+			fetch('/api/tags/categories'),
+			fetch('/api/static-tags/definitions'),
+		])
+		if (catRes.ok) categories.value = await catRes.json()
+		if (staticRes.ok) {
+			const definitions: StaticTagDefinition[] = await staticRes.json()
+			staticDefinitions.value = definitions
+			definitions.forEach((def) => {
+				if (def.id !== undefined && staticValues.value[def.id] === undefined) {
+					staticValues.value[def.id] = 0
+				}
+			})
+		}
 	} catch (error) {
-		console.error('Failed to fetch categories:', error)
+		console.error('Failed to fetch data:', error)
 	}
 }
 
@@ -50,6 +65,7 @@ watch(
 			webUrl.value = ''
 			isWebLink.value = false
 			selectedTagIds.value = []
+			staticValues.value = {}
 			if (previewUrl.value) {
 				URL.revokeObjectURL(previewUrl.value)
 				previewUrl.value = null
@@ -102,11 +118,16 @@ const uploadImage = async () => {
 			imageData = await response.json()
 		}
 
-		if (imageData && selectedTagIds.value.length > 0) {
-			await fetch(`/api/images/${imageData.id}/tags`, {
+		if (imageData) {
+			// Update both standard and static tags using the main image update endpoint
+			await fetch(`/api/images/${imageData.id}`, {
 				method: 'PUT',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(selectedTagIds.value),
+				body: JSON.stringify({
+					title: title.value,
+					tagIds: selectedTagIds.value,
+					staticTagValues: staticValues.value,
+				}),
 			})
 		}
 
@@ -192,6 +213,18 @@ onMounted(fetchData)
 					</div>
 
 					<div class="right-side">
+						<h3 v-if="staticDefinitions.length > 0" class="section-title">Static Tags</h3>
+						<div v-if="staticDefinitions.length > 0" class="static-tags-container">
+							<div v-for="def in staticDefinitions" :key="def.id" class="static-tag-item">
+								<label>{{ def.title }}</label>
+								<input
+									type="number"
+									v-model.number="staticValues[def.id!]"
+									class="number-input"
+								/>
+							</div>
+						</div>
+
 						<h3 class="section-title">Assign Tags</h3>
 						<div class="tags-container">
 							<div v-for="cat in categories" :key="cat.id" class="category-group">
@@ -364,10 +397,46 @@ hr {
 	color: var(--color-text);
 }
 
+.static-tags-container {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	margin-bottom: 20px;
+}
+
+.static-tag-item {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	background: var(--color-background-soft);
+	padding: 8px 12px;
+	border-radius: 12px;
+}
+
+.static-tag-item label {
+	font-size: 0.85em;
+	font-weight: 500;
+	color: var(--color-text);
+}
+
+.number-input {
+	width: 80px;
+	padding: 6px 10px;
+	border-radius: 8px;
+	border: 1px solid var(--color-border);
+	background: var(--color-background);
+	color: var(--color-text);
+	font-size: 0.9em;
+	text-align: right;
+}
+
 .tags-container {
 	display: flex;
 	flex-direction: column;
 	gap: 16px;
+	max-height: 300px;
+	overflow-y: auto;
+	padding-right: 8px;
 }
 
 .category-label {
@@ -412,5 +481,18 @@ hr {
 	justify-content: flex-end;
 	gap: 12px;
 	margin-top: 20px;
+}
+
+.tags-container::-webkit-scrollbar {
+	width: 4px;
+}
+
+.tags-container::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.tags-container::-webkit-scrollbar-thumb {
+	background: var(--color-border);
+	border-radius: 10px;
 }
 </style>
