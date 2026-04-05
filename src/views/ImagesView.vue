@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, reactive, watch, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, reactive, watch, nextTick, computed } from 'vue'
 import GradientButton from '@/components/GradientButton.vue'
 import IconInput from '@/components/IconInput.vue'
 import ImageUploadModal from '@/components/ImageUploadModal.vue'
@@ -34,7 +34,7 @@ const currentPage = ref(0)
 const pageSize = ref(24)
 const hasMore = ref(true)
 const isLoading = ref(false)
-const sortValue = ref('random') // Default sort is now random
+const sortValue = ref('random')
 
 const confirmation = reactive({
 	isOpen: false,
@@ -169,7 +169,7 @@ const fetchData = async () => {
 const resetFilters = () => {
 	searchQuery.value = ''
 	isExact.value = false
-	sortValue.value = 'random' // Reset to random
+	sortValue.value = 'random'
 	Object.keys(selectedFilters).forEach((key) => {
 		selectedFilters[key] = []
 	})
@@ -206,6 +206,25 @@ function editImage(image: Image) {
 	isImageEditOpen.value = true
 }
 
+// Masonry distribution logic
+const columnCount = ref(4)
+
+const updateColumnCount = () => {
+	const width = window.innerWidth
+	if (width <= 700) columnCount.value = 1
+	else if (width <= 1000) columnCount.value = 2
+	else if (width <= 1400) columnCount.value = 3
+	else columnCount.value = 4
+}
+
+const imageColumns = computed(() => {
+	const cols: Image[][] = Array.from({ length: columnCount.value }, () => [])
+	images.value.forEach((img, index) => {
+		cols[index % columnCount.value].push(img)
+	})
+	return cols
+})
+
 // Lazy loading observer
 const loadMoreSentinel = ref<HTMLElement | null>(null)
 let observer: IntersectionObserver | null = null
@@ -237,9 +256,15 @@ watch(
 )
 
 onMounted(async () => {
+	updateColumnCount()
+	window.addEventListener('resize', updateColumnCount)
 	await fetchData()
 	await fetchImages()
 	nextTick(setupObserver)
+})
+
+onUnmounted(() => {
+	window.removeEventListener('resize', updateColumnCount)
 })
 </script>
 
@@ -316,17 +341,19 @@ onMounted(async () => {
 		/>
 
 		<div class="gallery">
-			<ImageCard
-				v-for="img in images"
-				:key="img.id"
-				:id="img.id"
-				:title="img.title"
-				:tags="img.tags"
-				:static-tag-values="img.staticTagValues"
-				@open="openImage(img.id)"
-				@delete="deleteImage(img)"
-				@edit="editImage(img)"
-			></ImageCard>
+			<div v-for="(col, colIdx) in imageColumns" :key="colIdx" class="masonry-column">
+				<ImageCard
+					v-for="img in col"
+					:key="img.id"
+					:id="img.id"
+					:title="img.title"
+					:tags="img.tags"
+					:static-tag-values="img.staticTagValues"
+					@open="openImage(img.id)"
+					@delete="deleteImage(img)"
+					@edit="editImage(img)"
+				></ImageCard>
+			</div>
 		</div>
 
 		<div ref="loadMoreSentinel" class="sentinel">
@@ -381,14 +408,17 @@ main {
 
 .gallery {
 	padding: 2rem;
-	display: grid;
-	grid-template-columns: repeat(4, 1fr);
+	display: flex;
 	gap: 1.6rem;
 	width: 100%;
+	align-items: flex-start;
 }
 
-.gallery > * {
-	width: 100%;
+.masonry-column {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 1.6rem;
 }
 
 .sentinel {
@@ -398,23 +428,5 @@ main {
 	justify-content: center;
 	align-items: center;
 	color: var(--color-subtext);
-}
-
-@media (max-width: 1400px) {
-	.gallery {
-		grid-template-columns: repeat(3, 1fr);
-	}
-}
-
-@media (max-width: 1000px) {
-	.gallery {
-		grid-template-columns: repeat(2, 1fr);
-	}
-}
-
-@media (max-width: 700px) {
-	.gallery {
-		grid-template-columns: repeat(1, 1fr);
-	}
 }
 </style>
