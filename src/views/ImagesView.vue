@@ -9,13 +9,16 @@ import SearchIcon from '@/components/icons/SearchIcon.vue'
 import ImageCard from '@/components/ImageCard.vue'
 import type { Image } from '@/models/image'
 import type { TagCategory, Tag } from '@/models/tag'
+import type { StaticTagDefinition } from '@/models/staticTag'
 import ToggleDropdown from '@/components/ToggleDropdown.vue'
+import RangeDropdown from '@/components/RangeDropdown.vue'
 import IconToggle from '@/components/IconToggle.vue'
 import BookmarkIcon from '@/components/icons/BookmarkIcon.vue'
 import BookmarksIcon from '@/components/icons/BookmarksIcon.vue'
 
 const images = ref<Image[]>([])
 const categories = ref<TagCategory[]>([])
+const staticDefinitions = ref<StaticTagDefinition[]>([])
 const isModalOpen = ref(false)
 const isImageViewOpen = ref(false)
 const isImageEditOpen = ref(false)
@@ -25,11 +28,13 @@ const searchQuery = ref('')
 const isExact = ref(false)
 
 const selectedFilters = reactive<Record<string, string[]>>({})
+const staticFilters = reactive<Record<number, { min: number | null; max: number | null }>>({})
 
 const fetchImages = async () => {
 	const allSelectedTitles = Object.values(selectedFilters).flat()
+	const hasStaticFilters = Object.values(staticFilters).some((f) => f.min !== null || f.max !== null)
 
-	if (allSelectedTitles.length === 0 && !searchQuery.value.trim()) {
+	if (allSelectedTitles.length === 0 && !searchQuery.value.trim() && !hasStaticFilters) {
 		try {
 			const response = await fetch('/api/images')
 			if (response.ok) images.value = await response.json()
@@ -50,6 +55,13 @@ const fetchImages = async () => {
 		}
 	})
 
+	const staticFilterPayload: Record<number, { min: number | null; max: number | null }> = {}
+	Object.entries(staticFilters).forEach(([id, filter]) => {
+		if (filter.min !== null || filter.max !== null) {
+			staticFilterPayload[Number(id)] = filter
+		}
+	})
+
 	try {
 		const response = await fetch('/api/images/filtered', {
 			method: 'POST',
@@ -58,6 +70,7 @@ const fetchImages = async () => {
 				tags: tagPayload,
 				title: searchQuery.value.trim(),
 				filterMode: isExact.value ? 'exact' : 'inclusive',
+				staticTagFilters: staticFilterPayload,
 			}),
 		})
 		if (response.ok) images.value = await response.json()
@@ -66,10 +79,22 @@ const fetchImages = async () => {
 	}
 }
 
-const fetchCategories = async () => {
+const fetchData = async () => {
 	try {
-		const response = await fetch('/api/tags/categories')
-		if (response.ok) categories.value = await response.json()
+		const [catRes, staticRes] = await Promise.all([
+			fetch('/api/tags/categories'),
+			fetch('/api/static-tags/definitions'),
+		])
+		if (catRes.ok) categories.value = await catRes.json()
+		if (staticRes.ok) {
+			const defs: StaticTagDefinition[] = await staticRes.json()
+			staticDefinitions.value = defs
+			defs.forEach((def) => {
+				if (def.id !== undefined && staticFilters[def.id] === undefined) {
+					staticFilters[def.id] = { min: null, max: null }
+				}
+			})
+		}
 	} catch (error) {
 		console.error(error)
 	}
@@ -80,6 +105,9 @@ const resetFilters = () => {
 	isExact.value = false
 	Object.keys(selectedFilters).forEach((key) => {
 		selectedFilters[key] = []
+	})
+	Object.keys(staticFilters).forEach((key) => {
+		staticFilters[Number(key)] = { min: null, max: null }
 	})
 	fetchImages()
 }
@@ -107,9 +135,13 @@ watch(isExact, () => {
 	fetchImages()
 })
 
+watch(staticFilters, () => {
+	fetchImages()
+}, { deep: true })
+
 onMounted(() => {
 	fetchImages()
-	fetchCategories()
+	fetchData()
 })
 </script>
 
@@ -138,6 +170,17 @@ onMounted(() => {
 			</IconToggle>
 
 			<div class="vertical-line"></div>
+
+			<RangeDropdown
+				v-for="def in staticDefinitions"
+				:key="def.id"
+				:title="def.title"
+				v-model:min="staticFilters[def.id!].min"
+				v-model:max="staticFilters[def.id!].max"
+				class="drop"
+			/>
+
+			<div v-if="staticDefinitions.length > 0" class="vertical-line"></div>
 
 			<ToggleDropdown
 				class="drop"
@@ -183,8 +226,7 @@ main {
 	background: var(--color-background-panel);
 }
 
-.header,
-.filter {
+.header {
 	width: 100%;
 	height: 5rem;
 	border-bottom: 1px solid var(--color-border);
@@ -193,6 +235,19 @@ main {
 	justify-content: left;
 	align-items: center;
 	padding: 0 32px;
+}
+
+.filter {
+	width: 100%;
+	min-height: 5rem;
+	border-bottom: 1px solid var(--color-border);
+	background: var(--color-background);
+	display: flex;
+	justify-content: left;
+	align-items: center;
+	padding: 16px 32px;
+	flex-wrap: wrap;
+	gap: 12px 0;
 }
 
 .drop {
@@ -207,6 +262,7 @@ main {
 	border-left: 1px solid var(--color-border);
 	height: 1.5em;
 	margin: 0 16px;
+	flex-shrink: 0;
 }
 
 .gallery {
