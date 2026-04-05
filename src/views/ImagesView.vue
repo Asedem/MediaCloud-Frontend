@@ -149,6 +149,7 @@ onMounted(() => {
 				:id="img.id"
 				:title="img.title"
 				:tags="img.tags"
+				:static-tag-values="img.staticTagValues"
 				@open="openImage(img.id)"
 				@delete="deleteImage(img.id)"
 				@edit="editImage(img)"

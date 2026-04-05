@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import ContrastButton from '@/components/ContrastButton.vue'
 import GradientButton from '@/components/GradientButton.vue'
 import IconInput from '@/components/IconInput.vue'
@@ -13,10 +14,13 @@ import IconToggle from '@/components/IconToggle.vue'
 import ImageCard from '@/components/ImageCard.vue'
 import SidebarButton from '@/components/SidebarButton.vue'
 import SimpleInput from '@/components/SimpleInput.vue'
+import NumericInput from '@/components/NumericInput.vue'
 import SubtleButton from '@/components/SubtleButton.vue'
 import TagDisplay from '@/components/TagDisplay.vue'
 import TextToggle from '@/components/TextToggle.vue'
 import ToggleDropdown from '@/components/ToggleDropdown.vue'
+
+const demoNumber = ref(42)
 </script>
 
 <template>
@@ -67,6 +71,13 @@ import ToggleDropdown from '@/components/ToggleDropdown.vue'
 		<p>Simple text input component</p>
 		<SimpleInput placeholder="Enter name"></SimpleInput>
 
+		<h2>Numeric Input</h2>
+		<p>Custom number input component for static tag values</p>
+		<div style="width: 200px">
+			<NumericInput v-model="demoNumber" placeholder="Enter number"></NumericInput>
+			<p style="font-size: 0.8em; margin-top: 5px">Value: {{ demoNumber }}</p>
+		</div>
+
 		<h2>Icon Input</h2>
 		<p>Text input component with an icon up front</p>
 		<IconInput placeholder="Serach for anything...">
@@ -98,7 +109,14 @@ import ToggleDropdown from '@/components/ToggleDropdown.vue'
 		<ImageCard
 			:id="1"
 			title="Card title"
-			:tags="[{ id: 1, title: 'Tag', description: '', color: '#2352cc' }]"
+			:tags="[{ id: 1, title: 'Tag', description: 'Boolean Tag', color: '#2352cc' }]"
+			:static-tag-values="[
+				{
+					id: 1,
+					definition: { title: 'HP', description: 'Horsepower' },
+					value: 350,
+				},
+			]"
 			class="image-card"
 		>
 		</ImageCard>
@@ -113,7 +131,7 @@ main {
 }
 
 h2 {
-	margin-top: 24px;
+	margin-top: 32px;
 }
 
 p {
@@ -121,6 +139,6 @@ p {
 }
 
 .image-card {
-	width: 250px;
+	width: 280px;
 }
 </style>

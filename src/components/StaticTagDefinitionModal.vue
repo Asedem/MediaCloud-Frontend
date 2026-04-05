@@ -64,9 +64,9 @@ const saveDefinition = async () => {
 			<h2>{{ definition ? 'Edit Static Tag' : 'Create Static Tag' }}</h2>
 			<p>Every image will store a unique value for this tag.</p>
 			<br />
-			<SimpleInput v-model="title" placeholder="Tag Title (e.g., Horsepower)" />
+			<SimpleInput v-model="title" placeholder="Tag Title" />
 			<br />
-			<SimpleInput v-model="description" placeholder="Description (optional)" />
+			<SimpleInput v-model="description" placeholder="Description" />
 
 			<div class="actions">
 				<SubtleButton @click="emit('close')">

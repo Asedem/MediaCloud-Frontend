@@ -3,6 +3,7 @@ import { ref, watch, onMounted } from 'vue'
 import SubtleButton from './SubtleButton.vue'
 import GradientButton from './GradientButton.vue'
 import SimpleInput from './SimpleInput.vue'
+import NumericInput from './NumericInput.vue'
 import TagDisplay from './TagDisplay.vue'
 import type { TagCategory } from '@/models/tag'
 import type { StaticTagDefinition } from '@/models/staticTag'
@@ -130,11 +131,7 @@ onMounted(fetchData)
 						<div v-if="staticDefinitions.length > 0" class="static-tags-container">
 							<div v-for="def in staticDefinitions" :key="def.id" class="static-tag-item">
 								<label>{{ def.title }}</label>
-								<input
-									type="number"
-									v-model.number="staticValues[def.id!]"
-									class="number-input"
-								/>
+								<NumericInput v-model="staticValues[def.id!]" class="value-input" />
 							</div>
 						</div>
 
@@ -262,7 +259,7 @@ hr {
 	justify-content: space-between;
 	align-items: center;
 	background: var(--color-background-soft);
-	padding: 8px 12px;
+	padding: 6px 12px;
 	border-radius: 12px;
 }
 
@@ -272,15 +269,8 @@ hr {
 	color: var(--color-text);
 }
 
-.number-input {
-	width: 80px;
-	padding: 6px 10px;
-	border-radius: 8px;
-	border: 1px solid var(--color-border);
-	background: var(--color-background);
-	color: var(--color-text);
-	font-size: 0.9em;
-	text-align: right;
+.value-input {
+	width: 100px;
 }
 
 .tags-container {

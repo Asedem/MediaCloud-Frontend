@@ -12,24 +12,28 @@ const emit = defineEmits(['edit', 'delete', 'add', 'edit-tag'])
 	<div class="image-card">
 		<div class="card-body">
 			<h1 class="card-title">{{ category.title }}</h1>
-			<div class="tag-row">
-				<TagDisplay
+			<p class="description">Standard category for boolean tags.</p>
+			<div class="tag-list">
+				<div
 					v-for="tag in category.tags"
 					:key="tag.id"
-					:color="tag.color"
-					class="clickable-tag"
+					class="tag-item"
 					@click="emit('edit-tag', tag, category.id)"
 				>
-					<template #text>{{ tag.title }}</template>
-				</TagDisplay>
+					<TagDisplay :color="tag.color" class="clickable-tag">
+						<template #text>{{ tag.title }}</template>
+					</TagDisplay>
+					<span v-if="tag.description" class="tag-desc">{{ tag.description }}</span>
+				</div>
 			</div>
-			<br />
-			<ContrastButton @click="emit('add', category.id)">
-				<template #text>Add Tag</template>
-			</ContrastButton>
-			<SubtleButton class="space" @click="emit('edit', category)">
-				<template #text>Edit</template>
-			</SubtleButton>
+			<div class="actions">
+				<ContrastButton @click="emit('add', category.id)">
+					<template #text>Add Tag</template>
+				</ContrastButton>
+				<SubtleButton @click="emit('edit', category)">
+					<template #text>Edit Category</template>
+				</SubtleButton>
+			</div>
 		</div>
 	</div>
 </template>
@@ -51,29 +55,53 @@ const emit = defineEmits(['edit', 'delete', 'add', 'edit-tag'])
 }
 
 .card-title {
-	margin: 0 0 1em 0;
-	font-size: 1em;
-	font-weight: 600;
+	margin: 0 0 0.2em 0;
+	font-size: 1.1em;
+	font-weight: 700;
 	color: var(--color-text);
 }
 
-.tag-row {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 8px 12px;
-	align-items: center;
+.description {
+	font-size: 0.8em;
+	color: var(--color-subtext);
+	margin-bottom: 1em;
 }
 
-.clickable-tag {
+.tag-list {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.tag-item {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	padding: 8px 12px;
+	background: var(--color-background-soft);
+	border-radius: 12px;
 	cursor: pointer;
 	transition: opacity 0.2s;
 }
 
-.clickable-tag:hover {
+.tag-item:hover {
 	opacity: 0.8;
 }
 
-.space {
-	margin-left: 14px;
+.tag-desc {
+	font-size: 0.75em;
+	color: var(--color-subtext);
+	padding-left: 4px;
+}
+
+.clickable-tag {
+	width: fit-content;
+}
+
+.actions {
+	display: flex;
+	gap: 12px;
+	margin-top: 24px;
+	flex-wrap: wrap;
 }
 </style>

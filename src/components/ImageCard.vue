@@ -1,8 +1,14 @@
 <script setup lang="ts">
 import type { Tag } from '@/models/tag'
+import type { ImageStaticTagValue } from '@/models/staticTag'
 import TagDisplay from './TagDisplay.vue'
 
-defineProps<{ id: number; title: string; tags: Tag[] }>()
+defineProps<{
+	id: number
+	title: string
+	tags: Tag[]
+	staticTagValues?: ImageStaticTagValue[]
+}>()
 const emit = defineEmits(['open', 'delete', 'edit'])
 </script>
 
@@ -21,6 +27,14 @@ const emit = defineEmits(['open', 'delete', 'edit'])
 
 		<div class="card-body">
 			<h2 class="card-title">{{ title }}</h2>
+
+			<div v-if="staticTagValues && staticTagValues.length > 0" class="static-tag-row">
+				<div v-for="sv in staticTagValues" :key="sv.id" class="static-pill">
+					<span class="pill-label">{{ sv.definition.title }}</span>
+					<span class="pill-value">{{ sv.value }}</span>
+				</div>
+			</div>
+
 			<div class="tag-row">
 				<TagDisplay v-for="tag in tags" :key="tag.id" :color="tag.color">
 					<template #text>{{ tag.title }}</template>
@@ -121,10 +135,42 @@ const emit = defineEmits(['open', 'delete', 'edit'])
 }
 
 .card-title {
-	margin: 0 0 1em 0;
+	margin: 0 0 0.8em 0;
 	font-size: 1em;
 	font-weight: 600;
 	color: var(--color-text);
+}
+
+.static-tag-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin-bottom: 12px;
+}
+
+.static-pill {
+	display: flex;
+	align-items: center;
+	background: var(--color-background-soft);
+	border: 1px solid var(--color-border);
+	border-radius: 8px;
+	overflow: hidden;
+	font-size: 0.7em;
+	font-weight: 600;
+}
+
+.pill-label {
+	padding: 2px 6px;
+	background: var(--color-background-soft);
+	color: var(--color-subtext);
+	text-transform: uppercase;
+	letter-spacing: 0.02em;
+}
+
+.pill-value {
+	padding: 2px 6px;
+	background: var(--color-text);
+	color: var(--color-background);
 }
 
 .tag-row {
