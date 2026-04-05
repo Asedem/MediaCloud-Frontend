@@ -49,6 +49,7 @@ const staticFilters = reactive<Record<number, { min: number | null; max: number 
 const sortOptions = ref<{ label: string; value: string }[]>([
 	{ label: 'Random', value: 'random' },
 	{ label: 'Newest First', value: 'default' },
+	{ label: 'Oldest First', value: 'oldest' },
 	{ label: 'Title (A-Z)', value: 'title:asc' },
 	{ label: 'Title (Z-A)', value: 'title:desc' },
 ])
@@ -57,6 +58,7 @@ const updateSortOptions = () => {
 	const base = [
 		{ label: 'Random', value: 'random' },
 		{ label: 'Newest First', value: 'default' },
+		{ label: 'Oldest First', value: 'oldest' },
 		{ label: 'Title (A-Z)', value: 'title:asc' },
 		{ label: 'Title (Z-A)', value: 'title:desc' },
 	]
