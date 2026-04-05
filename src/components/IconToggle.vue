@@ -1,15 +1,17 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+const props = defineProps<{
+	modelValue: boolean
+}>()
 
-const isActive = ref(false)
+const emit = defineEmits(['update:modelValue'])
 
 const toggle = () => {
-	isActive.value = !isActive.value
+	emit('update:modelValue', !props.modelValue)
 }
 </script>
 
 <template>
-	<div id="toggle-container" @click="toggle" :class="{ active: isActive }">
+	<div id="toggle-container" @click="toggle" :class="{ active: modelValue }">
 		<div id="indicator"></div>
 
 		<div class="icon-wrapper left">
@@ -28,7 +30,7 @@ const toggle = () => {
 	align-items: center;
 	padding: 6px;
 	background: var(--color-background-soft);
-	border-radius: 16px;
+	border-radius: 12px;
 	cursor: pointer;
 	user-select: none;
 	width: fit-content;

@@ -10,6 +10,9 @@ import ImageCard from '@/components/ImageCard.vue'
 import type { Image } from '@/models/image'
 import type { TagCategory, Tag } from '@/models/tag'
 import ToggleDropdown from '@/components/ToggleDropdown.vue'
+import IconToggle from '@/components/IconToggle.vue'
+import BookmarkIcon from '@/components/icons/BookmarkIcon.vue'
+import BookmarksIcon from '@/components/icons/BookmarksIcon.vue'
 
 const images = ref<Image[]>([])
 const categories = ref<TagCategory[]>([])
@@ -19,6 +22,7 @@ const isImageEditOpen = ref(false)
 const imageViewId = ref(-1)
 const selectedImage = ref<Image | null>(null)
 const searchQuery = ref('')
+const isExact = ref(false)
 
 const selectedFilters = reactive<Record<string, string[]>>({})
 
@@ -53,6 +57,7 @@ const fetchImages = async () => {
 			body: JSON.stringify({
 				tags: tagPayload,
 				title: searchQuery.value.trim(),
+				filterMode: isExact.value ? 'exact' : 'inclusive',
 			}),
 		})
 		if (response.ok) images.value = await response.json()
@@ -72,6 +77,7 @@ const fetchCategories = async () => {
 
 const resetFilters = () => {
 	searchQuery.value = ''
+	isExact.value = false
 	Object.keys(selectedFilters).forEach((key) => {
 		selectedFilters[key] = []
 	})
@@ -97,6 +103,10 @@ watch(searchQuery, () => {
 	fetchImages()
 })
 
+watch(isExact, () => {
+	fetchImages()
+})
+
 onMounted(() => {
 	fetchImages()
 	fetchCategories()
@@ -119,6 +129,16 @@ onMounted(() => {
 			<GradientButton class="all" @click="resetFilters">
 				<template #text>Show all Media</template>
 			</GradientButton>
+
+			<div class="vertical-line"></div>
+
+			<IconToggle v-model="isExact" title="Filter mode: Inclusive vs Exact">
+				<template #icon-left><BookmarkIcon /></template>
+				<template #icon-right><BookmarksIcon /></template>
+			</IconToggle>
+
+			<div class="vertical-line"></div>
+
 			<ToggleDropdown
 				class="drop"
 				v-for="category in categories"
@@ -176,7 +196,7 @@ main {
 }
 
 .drop {
-	margin-left: 10px;
+	margin-right: 10px;
 }
 
 .search {
